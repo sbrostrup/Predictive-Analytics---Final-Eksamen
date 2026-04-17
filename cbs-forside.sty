@@ -1,0 +1,130 @@
+\ProvidesPackage{ku-forside}[2007/07/07 v1.0 Frontpages with University of Cph. logos]
+
+% \RequirePackage{euler}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\pagestyle{fancy}      % Set the page style to fancy
+\fancyhf{}             % Clear all header and footer fields
+\renewcommand{\headrulewidth}{0pt} 
+\fancyfoot[C]{\thepage//\pageref{LastPage}} 
+
+\renewcommand{\author}[1]{\def\FORFATTER{#1}}
+\renewcommand{\title}[1]{\def\TITEL{#1}}
+\renewcommand{\date}[1]{\def\AFLEVERINGSDATO{#1}}
+\newcommand{\opgave}[1]{\def\OPGAVE{#1}}
+\newcommand{\normalsider}[1]{\def\NORMALSIDER{#1}}
+\newcommand{\anslag}[1]{\def\ANSLAG{#1}}
+\newcommand{\forfatter}[1]{\def\FORFATTER{#1}}
+\newcommand{\titel}[1]{\def\TITEL{#1}}
+\newcommand{\undertitel}[1]{\def\UNDERTITEL{#1}}
+\newcommand{\vejleder}[1]{\def\VEJLEDER{#1}}
+\newcommand{\dato}[1]{\def\AFLEVERINGSDATO{#1}}
+
+
+
+\RequirePackage{eso-pic,graphicx,fix-cm,ae,aecompl,ifthen}
+\RequirePackage[]{color} 
+\RequirePackage[]{xcolor}
+\RequirePackage{fontspec}
+
+\newfontfamily{\cbs}{CBS NEW}
+[Extension = .ttf,Path=./fonts/,UprightFont={* Regular},BoldFont={* Bold}]
+
+\newfontfamily{\cbssans}{CBSSans}[
+Extension={.ttf},
+Path=./fonts/,
+UprightFont={*-Regular},
+BoldFont={*-Bold},
+ItalicFont={*-Italic},
+BoldItalicFont={*-BoldItalic}]
+
+% \setmainfont{CBSSerif}[
+% Extension={.otf},
+% Path=./fonts/,
+% UprightFont={*-Regular},
+% BoldFont={*-Bold},
+% ItalicFont={*-Italic},
+% BoldItalicFont={*-BoldItalic}]
+
+% Set headers to use \cbs font og color
+\definecolor{cbscolor}{RGB}{73, 103, 170} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%Overskrifter%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ændre størrelsen og formatet for \chapter
+\titleformat{\chapter}[hang]{\normalfont\LARGE\bfseries}{\thechapter}{0.5pc}{}
+
+% Ændre størrelsen og formatet for \section
+\titleformat{\section}
+  {\rmfamily\Large\bfseries\raggedright}{\thesection}{1em}{}
+
+% Ændre størrelsen og formatet for \subsection
+\titleformat{\subsection}
+  {\rmfamily\large\bfseries}{\thesubsection}{1em}{}
+
+% Ændre størrelsen og formatet for \subsubsection
+\titleformat{\subsubsection}
+  {\rmfamily\scshape\bfseries\normalsize}{\thesubsubsection}{1em}{}
+
+
+\titlespacing*{\chapter}{0cm}{-0.5cm}{0.3cm}
+\titlespacing*{\section}{0cm}{0.3cm}{0.3cm}
+\titlespacing*{\subsection}{0cm}{0.3cm}{0.3cm}
+
+
+% Define text
+\newcommand{\codetext}[1]{{\texttt{\small #1}}}
+
+\def\maketitle{\thispagestyle{empty}                                           
+
+\AddToShipoutPicture*{\put(0,0){\includegraphics*[viewport=0 0 700 1600]{cbs-forside.pdf}}}
+\AddToShipoutPicture*{\put(62,283.5){\fontsize{20 pt}{22 pt}  {\cbs \textcolor{white}{\textbf{\OPGAVE}}}  }}
+\AddToShipoutPicture*{\put(62,255.3){\fontsize{14 pt}{16 pt}  {\cbs\textcolor{white}{\FORFATTER}  }}}
+\AddToShipoutPicture*{\put(61,380){\fontsize{42 pt}{40 pt} {\cbs \textcolor{white}{\textbf{\TITEL}}  }}}
+\AddToShipoutPicture*{\put(62,350){\fontsize{14 pt}{16 pt} {\cbs \textcolor{white}{\textit{\UNDERTITEL}}}}}
+\AddToShipoutPicture*{\put(62,785){\fontsize{14 pt}{16 pt} {\cbs \textcolor{white}{\VEJLEDER}  }}}
+\AddToShipoutPicture*{\put(62,710){\fontsize{14 pt}{16 pt} {\cbs \textcolor{white}{\AFLEVERINGSDATO}   }}}
+\AddToShipoutPicture*{\put(62,760){\fontsize{14 pt}{16 pt} {\cbs \textcolor{white}{\NORMALSIDER}  }}}
+\AddToShipoutPicture*{%
+  \put(62,735){%
+    \fontsize{14pt}{16pt}%
+    {\cbs\textcolor{white}{ \ANSLAG}}%
+  }%
+}
+\phantom{Usynlig, men nødvendig}
+\newpage \noindent}
+
+
+
+
+\usepackage{listings}
+% New colors defined below
+\definecolor{darkgreen}{rgb}{0.902, 0.416, 0.341}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{backcolour}{rgb}{1, 1, 1} 
+\definecolor{codeblue}{rgb}{0.404, 0.576, 0.839}
+\definecolor{codegreen}{rgb}{0.314, 0.627, 0.573}
+
+
+% Code listing style named "mystyle"
+\lstdefinestyle{mystyle}{
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{codeblue},
+  stringstyle=\color{darkgreen},
+  basicstyle=\cbssans\scriptsize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+   frame=single,                % adds a single line frame around the code
+  framerule=0.5pt,             % frame thickness
+  rulecolor=\color{black} 
+}
+
+% "mystyle" code listing set
+\lstset{style=mystyle}
