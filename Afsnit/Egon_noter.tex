@@ -1,0 +1,266 @@
+% Paste from here into your main Overleaf document.
+% Required packages (add to your preamble if not already there):
+%   \usepackage{booktabs}
+%   \usepackage{enumitem}
+
+%%-----------------------------------------------------------------------
+\section{Research Question}
+
+\textbf{Does the Phillips Curve have forecasting value for Danish inflation,
+and does incorporating European data improve forecasts relative to a
+univariate benchmark?}
+
+The Phillips Curve describes the empirical relationship between inflation
+and unemployment. From a forecasting perspective it raises a concrete and
+testable question: can a model that also uses unemployment outperform a
+pure time-series model of inflation? This is the central question of the
+assignment.
+
+The Denmark versus Eurozone angle sharpens the analysis further. Denmark
+is a small, open economy tightly integrated with the European business
+cycle, so European inflation and unemployment may Granger-cause Danish
+inflation. A bivariate or multivariate model that incorporates EU data
+may therefore forecast better than a model based on domestic data alone.
+At the same time, Denmark's ``flexicurity'' labour market institutions
+may produce a structurally different unemployment-inflation tradeoff from
+the Eurozone average, giving us something meaningful to compare and
+discuss.
+
+The relationship is also known to be \textbf{unstable over time}. The
+Phillips Curve ``disappeared'' in many countries during the 1980s and
+1990s, and there is ongoing debate about whether it has re-emerged
+post-COVID. Formal tests for structural breaks are therefore not an
+add-on but a core part of the analysis. Key references are
+\textcite{stockwatson1999} and \textcite{galigertler1999}.
+
+%%-----------------------------------------------------------------------
+\section{Data}
+
+\subsection{Series}
+
+Going back to 1975 rather than the early 1990s significantly strengthens
+the analysis. It adds the oil shocks of 1973 and 1979, the Volcker
+disinflation of the early 1980s, and the Danish ERM exit of 1992 as
+additional structural break candidates, and gives the Bai-Perron test
+roughly 200 quarterly observations to work with.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Series} & \textbf{Frequency} & \textbf{Period} & \textbf{Source} \\
+\midrule
+Danish unemployment rate   & Quarterly & 1975 onward & Statistics Denmark (dst.dk) \\
+Danish HICP / CPI          & Quarterly & 1975 onward & Statistics Denmark / Eurostat \\
+Eurozone unemployment rate & Quarterly & 1975 onward & ECB AWM database / OECD \\
+Eurozone HICP              & Quarterly & 1975 onward & ECB AWM database / Eurostat \\
+\bottomrule
+\end{tabular}
+\caption{Data overview. The ECB Area-Wide Model (AWM) database provides
+a synthetic Eurozone aggregate constructed back to 1970, enabling a
+consistent long-run comparison.}
+\end{table}
+
+\subsection{Transformations}
+
+\begin{itemize}[nosep]
+    \item Inflation is computed as the year-on-year percentage change in
+          the price index.
+    \item Unemployment is used as a rate in levels; stationarity is
+          assessed empirically via ADF and KPSS tests.
+    \item First differences are applied to any series found to be
+          non-stationary.
+    \item No population or calendar adjustments are expected to be
+          necessary, but this is verified during exploratory analysis.
+\end{itemize}
+
+%%-----------------------------------------------------------------------
+\section{Methods}
+
+The core forecasting question is whether a model that incorporates
+unemployment can outperform a univariate ARIMA benchmark. The analysis
+builds toward that comparison through the following stages.
+
+\subsection{Stage 1: Exploratory Analysis}
+
+\begin{itemize}[nosep]
+    \item Time plots for all four series, with visual inspection for
+          trend, structural shifts, and unusual observations.
+    \item STL decomposition to assess seasonal patterns in unemployment.
+    \item ACF and PACF plots to characterise autocorrelation structure.
+    \item ADF and KPSS unit root tests to determine the order of
+          integration for each series.
+\end{itemize}
+
+\subsection{Stage 2: Structural Break Tests}
+
+The instability of the Phillips Curve is well-documented in the
+literature and is a central theme of the paper. We test for it formally
+rather than assuming it away.
+
+\begin{itemize}[nosep]
+    \item \textbf{Chow test} at candidate break dates: the first oil
+          shock (1973 Q4), the Volcker disinflation (1982 Q1), the Danish
+          ERM exit (1992 Q3), the global financial crisis (2008 Q3), the
+          COVID shock (2020 Q1), and the post-pandemic inflation surge
+          (2021 Q3).
+    \item \textbf{Bai-Perron multiple breakpoint test} to let the data
+          determine the number and timing of breaks endogenously, without
+          imposing candidate dates.
+    \item \textbf{CUSUM and CUSUM-of-squares tests} to detect gradual
+          parameter instability over the full sample.
+    \item Results directly inform model estimation: we either include
+          break dummies, split the sample, or restrict the estimation
+          window to the most recent stable regime.
+\end{itemize}
+
+\subsection{Stage 3: General-to-Specific Model Selection (GETS)}
+
+GETS is particularly well-suited here because the candidate regressor
+set is wide: Danish inflation, Eurozone inflation, Danish unemployment,
+Eurozone unemployment, and lagged values of each. Starting broad and
+testing down finds the parsimonious model the data actually supports,
+rather than imposing a specification in advance. This is the approach
+advocated by \textcite{doornik2018} and is one of the methodological
+elements the lecturer specifically highlighted as underused.
+
+\begin{itemize}[nosep]
+    \item Specify a General Unrestricted Model (GUM):
+          \[
+          \pi_t^{DK} = \alpha
+            + \sum_{i=1}^{p} \beta_i \pi_{t-i}^{DK}
+            + \sum_{i=1}^{p} \delta_i \pi_{t-i}^{EU}
+            + \sum_{j=0}^{q} \gamma_j u_{t-j}^{DK}
+            + \sum_{j=0}^{q} \phi_j u_{t-j}^{EU}
+            + \varepsilon_t
+          \]
+          with initial lag length set generously ($p = q = 4$).
+    \item Apply sequential $t$-tests and $F$-tests to eliminate
+          insignificant regressors, verifying residual well-behavedness
+          at each step.
+    \item AIC and BIC serve as a cross-check on the final specification.
+    \item Run the same procedure for Eurozone inflation to compare
+          resulting model structures across the two regions.
+\end{itemize}
+
+\subsection{Stage 4: Benchmark Models}
+
+\begin{itemize}[nosep]
+    \item Na\"{i}ve forecast.
+    \item Seasonal na\"{i}ve forecast.
+    \item Simple exponential smoothing and Holt's method.
+\end{itemize}
+
+\subsection{Stage 5: Univariate ARIMA}
+
+This is the primary benchmark that the multivariate models must beat
+to demonstrate that unemployment contains forecasting information
+beyond what is already in past inflation.
+
+\begin{itemize}[nosep]
+    \item Fit ARIMA$(p,d,q)$ to Danish and Eurozone inflation separately,
+          using the Box-Jenkins procedure.
+    \item Select the final specification via AIC and BIC.
+\end{itemize}
+
+\subsection{Stage 6: Dynamic Regression (ARDL)}
+
+\begin{itemize}[nosep]
+    \item Estimate the parsimonious model from Stage 3 as a dynamic
+          regression with unemployment (domestic and/or European) as
+          external regressors.
+    \item Incorporate break dummies where Stage 2 identified instability.
+    \item Residual diagnostics: Ljung-Box test for autocorrelation, ARCH
+          test for heteroskedasticity.
+\end{itemize}
+
+\subsection{Stage 7: Vector Autoregression (VAR)}
+
+\begin{itemize}[nosep]
+    \item Specify a bivariate VAR in $(\pi_t^{DK},\, u_t^{DK})$ and a
+          four-variable VAR in
+          $(\pi_t^{DK},\, \pi_t^{EU},\, u_t^{DK},\, u_t^{EU})$.
+    \item Select lag length via AIC / BIC / HQIC.
+    \item Granger causality tests: does EU inflation Granger-cause Danish
+          inflation? Does unemployment Granger-cause inflation?
+    \item Impulse response functions to trace how a shock to European
+          unemployment propagates to Danish inflation.
+    \item Multi-step forecasts from the VAR as an additional competitor
+          model.
+\end{itemize}
+
+\subsection{Stage 8: Forecast Evaluation}
+
+\begin{itemize}[nosep]
+    \item Hold out the final 8 quarters as an evaluation period.
+    \item Generate one-step-ahead and four-step-ahead forecasts from all
+          models using a rolling window.
+    \item Compare accuracy via RMSE and MAE.
+    \item \textbf{Diebold-Mariano test} to assess whether the best
+          multivariate model statistically outperforms the ARIMA
+          benchmark. This is the direct answer to the research question.
+    \item Report 95\% prediction intervals and assess empirical coverage.
+\end{itemize}
+
+%%-----------------------------------------------------------------------
+\section{Paper Structure}
+
+\begin{enumerate}[nosep]
+    \item \textbf{Introduction} Research question, motivation, and
+          overview.
+    \item \textbf{Background} Phillips Curve theory, evidence on
+          instability, Denmark versus Eurozone labour market
+          institutions.
+    \item \textbf{Data} Sources, construction of long-run series,
+          descriptive statistics.
+    \item \textbf{Exploratory Analysis} Time plots, decomposition,
+          ACF/PACF, unit root tests.
+    \item \textbf{Structural Break Analysis} Methodology and results;
+          implications for estimation.
+    \item \textbf{Model Selection} GETS procedure and final
+          specifications for both regions.
+    \item \textbf{Model Estimation} ARIMA, dynamic regression, and VAR
+          results with diagnostics.
+    \item \textbf{Forecast Evaluation} Out-of-sample comparison,
+          Diebold-Mariano test, prediction intervals.
+    \item \textbf{Discussion} Does unemployment help forecast inflation?
+          What do the cross-country differences reveal? Limitations.
+    \item \textbf{Conclusion} Main findings and directions for further
+          work.
+\end{enumerate}
+
+%%-----------------------------------------------------------------------
+\section{Division of Work}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Section} & \textbf{Responsible} \\
+\midrule
+Data collection and cleaning         & TBD \\
+Exploratory analysis (Stage 1)       & TBD \\
+Structural break tests (Stage 2)     & TBD \\
+GETS model selection (Stage 3)       & TBD \\
+ARIMA and benchmarks (Stages 4 and 5) & TBD \\
+Dynamic regression (Stage 6)         & TBD \\
+VAR (Stage 7)                        & TBD \\
+Forecast evaluation (Stage 8)        & TBD \\
+Writing and editing                  & All \\
+\bottomrule
+\end{tabular}
+\caption{Work distribution (to be finalised by the group)}
+\end{table}
+
+%%-----------------------------------------------------------------------
+\section{Software and Replication}
+
+All analysis will be conducted in \textbf{R}. Key packages:
+\texttt{forecast} and \texttt{fable} (ARIMA, exponential smoothing,
+forecast evaluation), \texttt{strucchange} (Chow, Bai-Perron, CUSUM),
+\texttt{gets} (general-to-specific selection), \texttt{vars} (VAR,
+Granger causality, IRFs), and \texttt{dynlm} (dynamic regression).
+Code will be shared via a joint GitHub repository to ensure full
+replicability.
+
+% End of paste
