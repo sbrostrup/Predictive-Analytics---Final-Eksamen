@@ -1,6 +1,6 @@
 \documentclass[11pt,reqno, usenames]{report}
 \renewcommand{\rmdefault}{ppl}  % Skifter til Times New Roman
-\usepackage[a4paper, hmargin=2cm, tmargin=2cm, bmargin=3cm]{geometry}
+\usepackage[a4paper, hmargin=2cm, tmargin=3cm, bmargin=3cm]{geometry}
 
 % \newtheorem{theorem}{Teorem}[section]
 % \newtheorem{lemma}{Lemma}[section]
@@ -9,6 +9,8 @@
 
 
 %%%%%%%%%%%%%%%%%%%%% Sætnings design
+% https://fred.stlouisfed.org/series/LRHUADTTEZM156N
+% https://fred.stlouisfed.org/series/LFHUADTTDKM647N
 
 \usepackage[listings]{tcolorbox} 
 \tcbuselibrary{listings,theorems}
@@ -133,7 +135,7 @@ coltitle=white,center title}}
 \opgave{Final Exam}
 \forfatter{MSc in Business Administration and Mathematics - Cand.merc.(mat.)}
 \vejleder{Professors: Herdis Steingrimsdottir, Thomas Einfeldt}
-\normalsider{Number of pages: 5}
+\normalsider{Number of pages: 15}
 \date{Students: Casper Egon Hansen (S161795), Markus Emil Skifter (S160645), Sebastian Brostrup (S161547), Albert Scrøder}
 \anslag{ \hspace{0.12cm} 29 May, 2026}
 
@@ -149,7 +151,7 @@ coltitle=white,center title}}
 
 %%%%%%%%%%%% Sidehoved %%%%%%%%%%%%
 \fancyhf{} % Rens standard sidehoved/fod
-\fancyhead[L]{Sebastian Brostrup\\ Markus Emil Skifter\\ Casper Egon Hansen \\ Albert Scrøder} % Venstre sidehoved
+\fancyhead[L]{KAN-CDSCO1005U} % Venstre sidehoved
 \fancyhead[C]{Predictive Analytics - Final Exam} % Centreret sidehoved
 \fancyhead[R]{29 May  2026} % Højre sidehoved
 \renewcommand{\headrulewidth}{0.1pt} % Linje under sidehovedet
@@ -228,11 +230,18 @@ coltitle=white,center title}}
 %---------------------------------------------------------------------------------------
 
 %%%Indholdsfortegnelse
-%\newpage
-%\tableofcontents
-%\newpage
+\newpage
+\tableofcontents
+\newpage
+
+% Egon noter
+\input{Afsnit/Egon_noter}
 
 %%%%%%%%%%%% Indhold %%%%%%%%%%%%
+\newpage
+
+\input{Afsnit/Plan}
+
 %%% Question 1
 \newpage
 
