@@ -2,4 +2,25 @@
 %  3. DATA
 % ============================================================
 \section{Data}\label{sec:data}
-
+ 
+All four series are retrieved from FRED (Federal Reserve Bank of St.\ Louis)
+and share consistent, harmonised definitions across Denmark and the Eurozone.
+ 
+\begin{table}[h!]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Series} & \textbf{Region} & \textbf{FRED code} & \textbf{Definition} \\
+\midrule
+Unemployment rate & Denmark   & \texttt{LRHUADTTDKM156N}   & OECD harmonised, 25+, monthly \\
+Unemployment rate & Euro area & \texttt{LRHUADTTEZM156N}   & OECD harmonised, 25+, monthly \\
+HICP              & Denmark   & \texttt{CP0000DKM086NEST}  & Eurostat harmonised, not seas.\ adj., monthly \\
+HICP              & Euro area & \texttt{CP0000EZ19M086NEST}& Eurostat harmonised, not seas.\ adj., monthly \\
+\bottomrule
+\end{tabular}
+\caption{Data sources. Both unemployment series use identical OECD methodology
+and the same 25+ age bracket, ensuring cross-country comparability.
+Both HICP series are constructed under the same Eurostat rules,
+making the inflation measures directly comparable.}
+\end{table}
+ 

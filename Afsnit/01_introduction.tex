@@ -1,6 +1,33 @@
 % ============================================================
 %  1. INTRODUCTION
 % ============================================================
-\section{Introduction}\label{sec:introduction}
+\section{Introduction (Work in progress (EGON))}\label{sec:introduction}
+The Phillips curve, originally proposed by \cite{phillips1958} and later 
+formalized by \cite{samuelson1960}, postulates an inverse relationship between 
+inflation and unemployment. Despite its theoretical appeal, the empirical 
+stability of this relationship has been widely debated. In particular, the 
+curve appeared to break down during the stagflation of the 1970s, and more 
+recently, the post-COVID surge in inflation has reignited the discussion of 
+whether unemployment retains meaningful predictive power over inflation dynamics 
+\parencite{stock2019}.
 
+This paper investigates whether the Phillips curve relationship carries 
+forecasting value for Danish inflation. Specifically, we ask: 
+\begin{center}
+    \textit{Can we produce more accurate forecasts of Danish inflation by incorporating unemployment data and the broader European macroeconomic environment, compared to a purely univariate benchmark?}
+\end{center}
+To answer this question, we employ two forecasting models. First, an 
+ARIMA model serves as a univariate baseline, forecasting Danish inflation using 
+only its own history. Second, a Vector Autoregression (VAR) model incorporates 
+Danish unemployment, Danish inflation, and Eurozone inflation jointly, allowing 
+us to assess whether cross-variable dynamics -- including potential spillovers 
+from the European economy -- improve forecast accuracy. Variable selection for 
+the VAR model is guided by a General-to-Specific (GETS) approach, following 
+\cite{doornik2014}. Forecast accuracy is evaluated using standard measures 
+including RMSE and MAE, and models are compared both in-sample and 
+out-of-sample.
+
+The remainder of the paper is structured as follows. Section 2 describes the 
+data. Section 3 introduces the methodology. Section 4 presents and discusses 
+the results. Section 5 concludes.
 
