@@ -162,28 +162,77 @@ The tests confirm that the first-differenced variables are stationary: the ADF t
 \end{figure}
 
 
-\subsection{Fitting the Arima}
+\subsection{Univariate ARIMA Benchmark}
 
 The univariate ARIMA model serves as the benchmark model. Its purpose is to assess how well Danish inflation can be forecast using only its own past values. Since the stationarity tests indicate that Danish inflation is stationary after first differencing, the ARIMA benchmark is estimated on first-differenced Danish inflation:
 \[
 \Delta \pi_t^{DK} = \pi_t^{DK} - \pi_{t-1}^{DK}.
 \]
 
-
-The ARIMA benchmark selected for first-differenced Danish inflation is
+The selected ARIMA benchmark for first-differenced Danish inflation is
 \[
 ARIMA(1,0,1)(0,0,1)_{12}.
 \]
-The presence of a seasonal moving-average term indicates remaining annual dependence in Danish inflation, which is consistent with the ACF/PACF evidence around lag 12. Thus, seasonality is handled within the ARIMA specification rather than through additional seasonal differencing. The model obtains an AIC of 144.51, an AICc of 144.64, and a BIC of 159.34, which provide the benchmark values for later model comparison. \textcolor{red}{Lidt usikker på hvordan vi bedst lige håndterer den mini seasonalit der er. Men sådan her er jeg endt med at gøre det}
+This specification includes one autoregressive term, one moving-average term, and one seasonal moving-average term at the annual frequency. The seasonal component indicates that some annual dependence remains in Danish inflation, consistent with the earlier ACF and PACF evidence around lag 12. Thus, seasonality is handled within the ARIMA specification rather than through additional seasonal differencing. This avoids over-differencing while still allowing the model to capture seasonal dynamics.
 
-The residual diagnostics indicate that the ARIMA benchmark is adequate. The residual ACF shows no clear remaining autocorrelation, and the Ljung-Box test fails to reject the null of no residual autocorrelation at lag 24, with \(p = 0.3869\). Hence, the model appears to capture the main serial dependence in first-differenced Danish inflation. Some outliers remain, likely reflecting the exceptional post-COVID inflation period.
+\begin{table}[H]
+\centering
+\caption{Information criteria for the ARIMA benchmark}
+\begin{tabular}{lccc}
+\hline
+Model & AIC & AICc & BIC \\
+\hline
+ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
+\hline
+\end{tabular}
+\label{tab:arima_benchmark_ic}
+\end{table}
 
-\begin{figure}
+The residual diagnostics indicate that the ARIMA benchmark is adequate. The residual ACF shows no clear remaining autocorrelation, and the Ljung-Box test fails to reject the null hypothesis of no residual autocorrelation at lag 24:
+\[
+Q(24) = 25.3508, \qquad p = 0.3869.
+\]
+Hence, the model appears to capture the main serial dependence in first-differenced Danish inflation. Some outliers remain, likely reflecting the exceptional post-COVID inflation period, but there is no strong evidence of systematic autocorrelation left in the residuals.
+
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
-    \caption{Enter Caption}
-    \label{fig:placeholder}
+    \includegraphics[width=0.85\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
+    \caption{Residual diagnostics for the ARIMA benchmark}
+    \label{fig:arima_benchmark_residuals}
 \end{figure}
+
+
+\subsection{Dynamic Regression: Phillips Curve Specification}
+
+To test whether unemployment adds forecasting information beyond inflation's own past dynamics, we estimate a dynamic regression model with ARIMA errors:
+\[
+\Delta \pi_t^{DK}
+=
+\alpha
++
+\beta \Delta u_t^{DK}
++
+\varepsilon_t.
+\]
+The selected error specification is again \(ARIMA(1,0,1)(0,0,1)_{12}\). The estimated coefficient on differenced Danish unemployment is \(-0.0041\), with a standard error of \(0.0234\). The coefficient is close to zero and statistically insignificant, suggesting that changes in Danish unemployment do not add explanatory power for changes in Danish inflation in this simple Phillips curve specification. \textcolor{red}{stadig bare lidt indlende, så der mangler lidt summary eller reports af vores fit}
+
+Model comparison also favours the univariate ARIMA benchmark. The ARIMA benchmark has lower AIC, AICc, and BIC values than the dynamic regression model, indicating that the additional unemployment variable does not improve in-sample fit once model complexity is penalised.
+
+\begin{table}[H]
+\centering
+\caption{Model comparison: ARIMA benchmark and dynamic regression}
+\begin{tabular}{lccc}
+\hline
+Model & AIC & AICc & BIC \\
+\hline
+ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
+Dynamic regression & 146.48 & 146.68 & 165.01 \\
+\hline
+\end{tabular}
+\label{tab:arima_dyn_comparison}
+\end{table}
+
+The residual diagnostics for the dynamic regression are also acceptable. The Ljung-Box test yields a p-value of \(0.3622\), so the null of no residual autocorrelation is not rejected. However, since the unemployment coefficient is insignificant and the information criteria are worse than for the benchmark model, the simple dynamic regression provides limited support for the Phillips curve as a forecasting relationship.
 
 
 
