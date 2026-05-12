@@ -4,6 +4,31 @@
 %   \usepackage{enumitem}
 
 %%-----------------------------------------------------------------------
+\chapter{EGON noter}
+\section{Strukturovervejelser}
+
+\subsection{Hvad Thomas sandsynligvis mente}
+
+\begin{itemize}
+    \item \textbf{ARIMA} $\rightarrow$ baseline på dansk inflation
+    \item \textbf{GETS $\rightarrow$ Dynamic regression eller VAR} med dansk arbejdsløshed på dansk inflation. Det er den klassiske Phillips curve-test: har arbejdsløshed forecasting-værdi for inflation?
+    \item \textbf{Granger-kausalitet med EU-data} som et \textit{analytisk element} -- altså ikke en tredje model, men en test der besvarer: er dansk inflation påvirket af europæiske forhold? Det bruges til at \textit{motivere} eller \textit{diskutere} modellen, ikke som en selvstændig forecasting-model.
+\end{itemize}
+
+\subsection{Hvad det betyder for den tidligere anbefaling}
+
+Den tidligere anbefaling var ikke så langt fra, men EU-delen blev overkompliceret ved at smide Eurozone-inflation ind i selve VAR-modellen. Det er nok for meget.
+
+En renere og skarpere struktur ville være:
+
+\begin{enumerate}
+    \item \textbf{ARIMA} -- univariat baseline på dansk inflation
+    \item \textbf{GETS $\rightarrow$ Dynamic regression eller VAR} -- dansk inflation og dansk arbejdsløshed (Phillips curve)
+    \item \textbf{Granger-kausalitet} som et diskussionselement: påvirker EU-inflation dansk inflation? Det kan bruges i data-afsnittet eller i diskussionen til at kontekstualisere resultaterne
+\end{enumerate}
+
+Det er en mere fokuseret opgave, og man undgår at drukne i for mange variable.
+
 \section{Research Question}
 
 \textbf{Does the Phillips Curve have forecasting value for Danish inflation,
