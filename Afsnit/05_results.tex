@@ -3,4 +3,177 @@
 % ============================================================
 \chapter{Presentation and Discussion of Results}\label{sec:results}
 
-% ─fda.
+\section{ARIMA Benchmark}
+
+AICc minimisation over a grid of candidate specifications selects an 
+ARIMA$(4,0,1)(0,0,1)_{12}$ model with a constant. The estimated coefficients 
+are reported in Table~\ref{tab:arima_coef}.
+
+\begin{table}[H]
+\centering
+\caption{ARIMA$(4,0,1)(0,0,1)_{12}$ coefficient estimates}
+\begin{tabular}{lcc}
+\hline
+Parameter & Estimate & Std. Error \\
+\hline
+AR(1)       &  1.866 & 0.114 \\
+AR(2)       & -1.089 & 0.171 \\
+AR(3)       &  0.411 & 0.124 \\
+AR(4)       & -0.197 & 0.063 \\
+MA(1)       & -0.641 & 0.104 \\
+SMA(1)      & -0.581 & 0.054 \\
+Constant    &  0.017 & 0.003 \\
+\hline
+\multicolumn{3}{l}{$\hat{\sigma}^2 = 0.118$, AICc $= 213.43$, BIC $= 241.98$} \\
+\hline
+\end{tabular}
+\label{tab:arima_coef}
+\end{table}
+
+The four AR terms reflect the persistence in Danish inflation, while the 
+seasonal MA term confirms the residual seasonal pattern identified in the 
+inspection stage. The Ljung-Box test at lag 24, however, rejects the null 
+hypothesis of serially uncorrelated residuals ($Q = 38.35$, $p = 0.003$), 
+indicating that the ARIMA$(4,0,1)(0,0,1)_{12}$ specification does not fully 
+capture all serial dependence in the training data. This motivates the 
+inclusion of external predictors in the dynamic regression models.
+
+Figure~\ref{fig:arima_forecast} shows the 24-month out-of-sample forecast 
+against actual Danish inflation. The model tracks the general level of 
+inflation reasonably well over the test period, with actual values largely 
+remaining within the 80 percent confidence band. However, the forecast 
+intervals widen substantially over the horizon, reflecting considerable 
+uncertainty about the post-surge inflation path. Out-of-sample forecast 
+accuracy yields an RMSE of 0.567 and an MAE of 0.471 percentage points, 
+which serve as the benchmark against which the dynamic regression models 
+are evaluated.
+
+\section{ARIMA with Structural Break Dummies}
+
+Adding the two step dummies to the ARIMA specification yields an LM with 
+ARIMA$(2,0,3)(0,0,1)_{12}$ errors. The break dummy for December 2012 carries 
+a coefficient of $-0.568$ (s.e. $0.236$), consistent with the deflationary 
+period following the sovereign debt crisis, while the August 2021 dummy 
+carries a coefficient of $0.681$ (s.e. $0.264$), capturing the upward shift 
+in the inflation mean during the post-COVID surge. The intercept of $1.991$ 
+represents the baseline inflation level before either break. In-sample fit 
+improves noticeably relative to the plain ARIMA benchmark, with AICc falling 
+from $213.43$ to $204.04$, confirming that the structural breaks carry 
+statistically meaningful information.
+
+Out-of-sample performance tells a different story. The Ljung-Box test 
+continues to reject serially uncorrelated residuals ($Q = 42.28$, $p = 0.001$), 
+and forecast accuracy in the test period is marginally worse than the plain 
+ARIMA, with RMSE rising from $0.567$ to $0.572$ and MAE from $0.471$ to 
+$0.509$. This divergence between in-sample and out-of-sample performance is 
+consistent with a well-known limitation of structural break dummies in 
+forecasting: once the break has occurred and the new regime has settled, the 
+dummies provide little additional signal for future values. The plain ARIMA 
+benchmark therefore remains the more competitive model out-of-sample, and 
+serves as the reference point for the dynamic regression evaluation.
+
+\section{GETS Model Selection and Dynamic Regression}
+
+The GUM included AR lags 1 to 6 of Danish inflation, contemporaneous and six 
+lags of first-differenced Danish unemployment, EU27 inflation, and 
+first-differenced EU27 unemployment, together with the two structural break 
+dummies. After GETS reduction, no lag of Danish unemployment was retained — 
+all were eliminated as statistically insignificant. EU27 inflation at lags 0, 
+1, and 6 survived reduction, confirming the ERM II spillover channel identified 
+visually in the data section. The 2013 break dummy was retained ($p = 0.003$), 
+while the 2021 break dummy was not significant individually ($p = 0.592$), as 
+the IIS and SIS indicators absorbed the post-COVID inflation shock directly. 
+The residual diagnostics from the GETS model pass cleanly, with Ljung-Box 
+$p = 0.776$, confirming adequate fit.
+
+The GETS-selected specification is carried into the fpp3 framework as Model C, 
+a dynamic regression of Danish inflation on EU27 inflation at lags 0, 1, and 6, 
+with both structural break dummies retained for economic reasons. AICc 
+minimisation selects an LM with ARIMA$(1,0,2)(1,0,2)_{12}$ errors. The 
+estimated coefficients are reported in Table~\ref{tab:modelC_coef}.
+
+\begin{table}[H]
+\centering
+\caption{Model C coefficient estimates}
+\begin{tabular}{lcc}
+\hline
+Parameter & Estimate & Std. Error \\
+\hline
+AR(1)         &  0.962 & 0.019 \\
+MA(1)         &  0.060 & 0.063 \\
+MA(2)         & -0.211 & 0.062 \\
+SAR(1)        &  0.791 & 0.101 \\
+SMA(1)        & -1.540 & 0.106 \\
+SMA(2)        &  0.694 & 0.078 \\
+break\_2013   & -0.427 & 0.162 \\
+break\_2021   &  0.592 & 0.207 \\
+EU27 infl. $t$     &  0.696 & 0.059 \\
+EU27 infl. $t-1$   &  0.132 & 0.059 \\
+EU27 infl. $t-6$   & -0.086 & 0.055 \\
+\hline
+\multicolumn{3}{l}{$\hat{\sigma}^2 = 0.073$, AICc $= 94.78$, BIC $= 137.23$} \\
+\hline
+\end{tabular}
+\label{tab:modelC_coef}
+\end{table}
+
+In-sample fit improves substantially relative to all ARIMA specifications, with 
+AICc falling to 94.78 and residual variance dropping to 0.073. The contemporaneous 
+EU27 inflation coefficient of 0.696 is large and precisely estimated, consistent 
+with the tight co-movement observed in the data. The Ljung-Box test, however, 
+continues to indicate residual serial correlation ($Q = 34.01$, $p = 0.013$).
+
+Out-of-sample, Model C performs worse than the univariate ARIMA benchmark, 
+yielding RMSE of 0.767 and MAE of 0.637 against 0.567 and 0.471 respectively. 
+The substantial gap between in-sample and out-of-sample performance suggests 
+that the model has overfit to the training period. The EU27 inflation signal, 
+while highly informative in-sample, appears to amplify rather than reduce 
+forecast errors in the 2024 to 2026 test window, a period in which both 
+Danish and EU27 inflation were rapidly normalising from post-surge levels. 
+This result directly answers the research question: incorporating unemployment 
+and European macroeconomic variables does not improve forecast accuracy for 
+Danish inflation relative to a simple univariate benchmark.
+
+\section{Model Comparison}
+
+Table~\ref{tab:model_comparison} summarises out-of-sample forecast accuracy 
+across all five models over the 24-month test period.
+
+\begin{table}[H]
+\centering
+\caption{Out-of-sample forecast accuracy (test period: April 2024 to March 2026)}
+\begin{tabular}{lcc}
+\hline
+Model & RMSE & MAE \\
+\hline
+ARIMA baseline             & 0.567 & 0.471 \\
+ARIMA with break dummies   & 0.572 & 0.509 \\
+Model A (DK unemployment)  & 0.613 & 0.544 \\
+Model C (GETS: EU27 inflation) & 0.767 & 0.637 \\
+Model B (DK unemployment + EU27 inflation) & 1.208 & 1.039 \\
+\hline
+\end{tabular}
+\label{tab:model_comparison}
+\end{table}
+
+The univariate ARIMA benchmark produces the lowest RMSE and MAE across all 
+models. Every multivariate specification performs worse out-of-sample, and the 
+ranking is monotone: adding more predictors consistently worsens forecast 
+accuracy. Model B, which includes both Danish unemployment and EU27 inflation, 
+is the worst performer by a wide margin, with RMSE more than double that of the 
+benchmark. This is a stark result: not only does unemployment fail to improve 
+forecasts, but combining it with EU27 inflation actively harms performance. The 
+result is consistent with a well-documented finding in the inflation forecasting 
+literature that multivariate models often fail to outperform univariate 
+benchmarks out-of-sample, particularly over short horizons and in periods of 
+regime change \parencite{stock_watson_2008}.
+
+\section{TSCV Robustness Check}
+
+Time Series Cross-Validation over the full sample yields an RMSE of 0.399 and 
+MAE of 0.274 for the ARIMA baseline, based on one-step-ahead forecasts averaged 
+across all expanding windows. These figures are lower than the fixed test set 
+results, which is expected since one-step-ahead errors are inherently smaller 
+than 24-step-ahead errors. The TSCV results confirm that the ARIMA model 
+produces consistent and stable one-step-ahead forecasts across the full sample, 
+reinforcing its position as the strongest performing model in this analysis.
