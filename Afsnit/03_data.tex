@@ -36,12 +36,13 @@ where \(HICP_t\) denotes the harmonised consumer price index in month \(t\). Une
 
 \subsection{Inspections of raw data}
 \subsubsection{Looking for trend}
-We do find evidence for trend in both employments rate plots and for both inflation plots. Though the danish inflation seems very slight upward. There is a general large spike around COVID-19 period. Danish and Eurozone unemployment rate are relatively similar. Whereas when we look at the inflation, there is more low to not trend on the danish inflation level, where as there is a more clear upward trend for the Eurozone inflation.
+Both unemployment series display a clear downward trend over the sample period, with Danish and Eurozone rates moving broadly in parallel. The inflation series tell a different story: Eurozone inflation exhibits a more pronounced upward trend, while Danish inflation remains comparatively flat with only a marginal positive drift. Both regions share a sharp and transitory spike around the COVID-19 period, which stands out as the dominant feature of the recent sample. 
 
+\textcolor{red}{disse grafer skal laves så man kan læse teksten - sæt stl ind og brug dette til at omtale om der er trend eller ej.}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{billeder/raw_data_plot_trend.png}
+    \includegraphics[width=1\linewidth]{billeder/Trends_in_unemployment_and_inflation.png}
     \caption{Both employment plots show a negative trend, and the inflations trends have a clear upward going trend}
     \label{fig:raw_data_plot_trend}
 \end{figure}
@@ -60,11 +61,11 @@ We do find evidence for trend in both employments rate plots and for both inflat
 
 % For Euro-area inflation, the same applies. There is some variation across months, but the pattern is not stable across years. A few high-inflation years create visible spikes, especially later in the year, but this should not be interpreted as normal seasonal behavior
 
-
+\textcolor{red}{disse grafer skal også ændres}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{billeder/indexed_seasonality_plot.png}
+    \includegraphics[width=1\linewidth]{billeder/Seasonality_in_unemployment_and_inflation.png}
     \caption{Unemployment shows some seasonal behavior, especially in the euro area, while HICP shows little clear seasonality in this plot.}
     \label{fig:index_seasonal_plot}
 \end{figure}
@@ -72,15 +73,17 @@ We do find evidence for trend in both employments rate plots and for both inflat
 
 The seasonal plots indicate some recurring seasonal variation in unemployment, particularly for the euro area, where unemployment tends to be higher in winter and lower during the summer months. The pattern is weaker for Danish unemployment. In contrast, inflation displays less systematic seasonality. The inflation plots are dominated by a few high-inflation years, suggesting that variation is driven more by macroeconomic shocks than by stable monthly seasonal patterns.
 
-
-
 % ==== subseries seasonal plot 
 
 To examine this pattern more clearly, we next consider seasonal subseries plots, which compare observations within each calendar month over time. These plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality. The inflation series are instead dominated by specific high-inflation episodes rather than regular monthly movements.
 
+
+
+\textcolor{red}{grafer skal fikses - tilføj at alle seasonal subseries plots can be seen in the appendix in \ref{fig: All seasonal subseries plots}}
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{billeder/seasonal_subseries_plot.png}
+    \includegraphics[width=1\linewidth]{billeder/Danish unemployment seasonal subseries.png}
     \caption{The plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality}
     \label{fig:seasonal_subseries_plot}
 \end{figure}
@@ -93,6 +96,8 @@ To examine this pattern more clearly, we next consider seasonal subseries plots,
 \subsubsection{Testing for stationarity}
 
 Before estimating the forecasting models, we assess stationarity using both the Augmented Dickey-Fuller (ADF) test and the KPSS test. The ADF test has non-stationarity as the null hypothesis, while the KPSS test has stationarity as the null hypothesis. Since the HICP indices have already been transformed into year-on-year inflation rates, the inflation variables are tested in growth-rate form.
+
+\textcolor{red}{vi skla kommentere på at p>0.1 er næste grænseniveau eftersom vi siger der er weak evidence.}
 
 \begin{table}[H]
 \centering
@@ -114,8 +119,9 @@ The results indicate that both unemployment variables are non-stationary in leve
 
 
 
-\subsubsection{Plotting ACF for staitonarity}
+\subsubsection{Plotting ACF for stationarity}
 The ACF plots support the findings from the stationarity tests. Both unemployment series display slowly declining autocorrelations that remain significant across many lags, indicating strong persistence and suggesting non-stationarity in levels. The inflation series are also persistent, but their autocorrelations decline more clearly toward zero. This is consistent with the mixed stationarity test results for inflation, where the evidence for non-stationarity is weaker than for unemployment.
+\textcolor{red}{fix}
 
 \begin{figure}[H]
     \centering
@@ -174,6 +180,8 @@ The selected ARIMA benchmark for first-differenced Danish inflation is
 ARIMA(1,0,1)(0,0,1)_{12}.
 \]
 This specification includes one autoregressive term, one moving-average term, and one seasonal moving-average term at the annual frequency. The seasonal component indicates that some annual dependence remains in Danish inflation, consistent with the earlier ACF and PACF evidence around lag 12. Thus, seasonality is handled within the ARIMA specification rather than through additional seasonal differencing. This avoids over-differencing while still allowing the model to capture seasonal dynamics.
+
+\textcolor{red}{fix}
 
 \begin{table}[H]
 \centering
@@ -241,3 +249,4 @@ The residual diagnostics for the dynamic regression are also acceptable. The Lju
 
 
 
+ntier lige nu generelle hvor er reseach henne lige nu. sætter sene, hvad vil vi gerne lave og hvor vil vi gerne placerer os henne 
