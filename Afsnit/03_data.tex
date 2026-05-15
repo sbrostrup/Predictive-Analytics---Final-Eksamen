@@ -40,12 +40,12 @@ Both unemployment series display a clear downward trend over the sample period, 
 
 \textcolor{red}{disse grafer skal laves så man kan læse teksten - sæt stl ind og brug dette til at omtale om der er trend eller ej.}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{billeder/Trends_in_unemployment_and_inflation.png}
-    \caption{Both employment plots show a negative trend, and the inflations trends have a clear upward going trend}
-    \label{fig:raw_data_plot_trend}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{billeder/Trends_in_unemployment_and_inflation.png}
+%     \caption{Both employment plots show a negative trend, and the inflations trends have a clear upward going trend}
+%     \label{fig:raw_data_plot_trend}
+% \end{figure}
 
 
 
@@ -63,12 +63,12 @@ Both unemployment series display a clear downward trend over the sample period, 
 
 \textcolor{red}{disse grafer skal også ændres}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{billeder/Seasonality_in_unemployment_and_inflation.png}
-    \caption{Unemployment shows some seasonal behavior, especially in the euro area, while HICP shows little clear seasonality in this plot.}
-    \label{fig:index_seasonal_plot}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{billeder/Seasonality_in_unemployment_and_inflation.png}
+%     \caption{Unemployment shows some seasonal behavior, especially in the euro area, while HICP shows little clear seasonality in this plot.}
+%     \label{fig:index_seasonal_plot}
+% \end{figure}
 
 
 The seasonal plots indicate some recurring seasonal variation in unemployment, particularly for the euro area, where unemployment tends to be higher in winter and lower during the summer months. The pattern is weaker for Danish unemployment. In contrast, inflation displays less systematic seasonality. The inflation plots are dominated by a few high-inflation years, suggesting that variation is driven more by macroeconomic shocks than by stable monthly seasonal patterns.
@@ -81,12 +81,12 @@ To examine this pattern more clearly, we next consider seasonal subseries plots,
 
 \textcolor{red}{grafer skal fikses - tilføj at alle seasonal subseries plots can be seen in the appendix in \ref{fig: All seasonal subseries plots}}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{billeder/Danish unemployment seasonal subseries.png}
-    \caption{The plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality}
-    \label{fig:seasonal_subseries_plot}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{billeder/Danishunemploymentseasonalsubseries.png}
+%     \caption{The plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality}
+%     \label{fig:seasonal_subseries_plot}
+% \end{figure}
 
 
 
@@ -123,12 +123,12 @@ The results indicate that both unemployment variables are non-stationary in leve
 The ACF plots support the findings from the stationarity tests. Both unemployment series display slowly declining autocorrelations that remain significant across many lags, indicating strong persistence and suggesting non-stationarity in levels. The inflation series are also persistent, but their autocorrelations decline more clearly toward zero. This is consistent with the mixed stationarity test results for inflation, where the evidence for non-stationarity is weaker than for unemployment.
 \textcolor{red}{fix}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{billeder/ACF_plots_for_stationarity_assessment.png}
-    \caption{Enter Caption}
-    \label{fig:ACF_plots_for_stationarity_assessment}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{billeder/ACF_plots_for_stationarity_assessment.png}
+%     \caption{Enter Caption}
+%     \label{fig:ACF_plots_for_stationarity_assessment}
+% \end{figure}
 
 
 
@@ -160,12 +160,12 @@ Euro-area inflation & 0.0114 & $>0.10$ & Stationary \\
 
 The tests confirm that the first-differenced variables are stationary: the ADF tests reject non-stationarity, while the KPSS tests fail to reject stationarity. The ACF plots in Figure~\ref{fig:difference_ACF_plot} support this conclusion, as the slow decay observed in levels is largely removed. Some seasonal autocorrelation remains, especially for euro-area unemployment around lags 12 and 24, suggesting that seasonal dynamics may still be relevant in the forecasting models.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\linewidth]{billeder/difference_ACF_plot.png}
-    \caption{ACF plots of the first-differenced variables}
-    \label{fig:difference_ACF_plot}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=1\linewidth]{billeder/difference_ACF_plot.png}
+%     \caption{ACF plots of the first-differenced variables}
+%     \label{fig:difference_ACF_plot}
+% \end{figure}
 
 
 \subsection{Univariate ARIMA Benchmark}
@@ -202,12 +202,12 @@ Q(24) = 25.3508, \qquad p = 0.3869.
 \]
 Hence, the model appears to capture the main serial dependence in first-differenced Danish inflation. Some outliers remain, likely reflecting the exceptional post-COVID inflation period, but there is no strong evidence of systematic autocorrelation left in the residuals.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
-    \caption{Residual diagnostics for the ARIMA benchmark}
-    \label{fig:arima_benchmark_residuals}
-\end{figure}
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.85\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
+%     \caption{Residual diagnostics for the ARIMA benchmark}
+%     \label{fig:arima_benchmark_residuals}
+% \end{figure}
 
 
 \subsection{Dynamic Regression: Phillips Curve Specification}

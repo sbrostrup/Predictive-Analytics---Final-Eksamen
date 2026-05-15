@@ -1,47 +1,11 @@
-@article{phillips1958,
-  author    = {Phillips, Alban William},
-  title     = {The Relation Between Unemployment and the Rate of Change of Money Wage Rates in the United Kingdom, 1861--1957},
-  journal   = {Economica},
-  volume    = {25},
-  number    = {100},
-  pages     = {283--299},
-  year      = {1958},
-  publisher = {Wiley}
-}
+%% references.bib
+%% Predictive Analytics — Phillips Curve / Inflation Forecasting assignment
+%% -----------------------------------------------------------------
+%% TEXTBOOK
+%% -----------------------------------------------------------------
 
-@article{samuelson1960,
-  author    = {Samuelson, Paul A. and Solow, Robert M.},
-  title     = {Analytical Aspects of Anti-Inflation Policy},
-  journal   = {American Economic Review},
-  volume    = {50},
-  number    = {2},
-  pages     = {177--194},
-  year      = {1960},
-  publisher = {American Economic Association}
-}
-
-@article{stock2019,
-  author    = {Stock, James H. and Watson, Mark W.},
-  title     = {Slack and Cyclically Sensitive Inflation},
-  journal   = {Journal of Money, Credit and Banking},
-  volume    = {52},
-  number    = {S2},
-  pages     = {393--428},
-  year      = {2020},
-  publisher = {Wiley}
-}
-
-@techreport{doornik2014,
-  author      = {Doornik, Jurgen A. and Hendry, David F.},
-  title       = {Statistical Model Selection with {`Big Data'}},
-  institution = {University of Oxford, Department of Economics},
-  type        = {Discussion Paper},
-  number      = {735},
-  year        = {2014}
-}
-
-@book{hyndman2021,
-  author    = {Hyndman, Rob J. and Athanasopoulos, George},
+@book{hyndman_athanasopoulos_2021,
+  author    = {Rob J. Hyndman and George Athanasopoulos},
   title     = {Forecasting: Principles and Practice},
   edition   = {3rd},
   publisher = {OTexts},
@@ -50,66 +14,224 @@
   url       = {https://otexts.com/fpp3/}
 }
 
-@book{gujarati2010,
-  author    = {Gujarati, Damodar N. and Porter, Dawn C.},
-  title     = {Essentials of Econometrics},
-  edition   = {4th},
-  publisher = {McGraw-Hill},
-  year      = {2010}
-}
-
-@article{gali1999,
-  author    = {Gal{\'i}, Jordi and Gertler, Mark},
-  title     = {Inflation Dynamics: A Structural Econometric Analysis},
-  journal   = {Journal of Monetary Economics},
-  volume    = {44},
-  number    = {2},
-  pages     = {195--222},
-  year      = {1999},
-  publisher = {Elsevier}
-}
-
-@article{pretis2018,
-  author    = {Pretis, Felix and Reade, J. James and Sucarrat, Genaro},
-  title     = {Automated General-to-Specific {(GETS)} Regression Modeling and
-               Indicator Saturation for Outliers and Structural Breaks},
-  journal   = {Journal of Statistical Software},
-  volume    = {86},
-  number    = {3},
-  pages     = {1--44},
-  year      = {2018}
-}
-
-@article{atkeson2001,
-  author    = {Atkeson, Andrew and Ohanian, Lee E.},
-  title     = {Are Phillips Curves Useful for Forecasting Inflation?},
-  journal   = {Federal Reserve Bank of Minneapolis Quarterly Review},
-  volume    = {25},
-  number    = {1},
-  pages     = {2--11},
-  year      = {2001}
-}
+%% -----------------------------------------------------------------
+%% PHILLIPS CURVE / INFLATION FORECASTING
+%% -----------------------------------------------------------------
 
 @techreport{stock_watson_2008,
-  author      = {Stock, James H. and Watson, Mark W.},
+  author      = {James H. Stock and Mark W. Watson},
   title       = {Phillips Curve Inflation Forecasts},
   institution = {National Bureau of Economic Research},
   year        = {2008},
-  number      = {14322}
+  type        = {Working Paper},
+  number      = {14322},
+  doi         = {10.3386/w14322}
 }
 
-@article{brave_butters_justiniano_2019,
-  author  = {Brave, Scott and Butters, R. Andrew and Justiniano, Alejandro},
-  title   = {Do Macro Variables, Asset Markets, or Surveys Forecast Inflation Better?},
-  journal = {FEDS Notes},
-  year    = {2019},
-  institution = {Board of Governors of the Federal Reserve System}
+%% NOTE: verify which 2019 Stock (or Stock & Watson) paper you are citing.
+%% The most likely candidate is below. Replace if needed.
+@techreport{stock2019,
+  author      = {James H. Stock and Mark W. Watson},
+  title       = {Slack and Cyclically Sensitive Inflation},
+  institution = {National Bureau of Economic Research},
+  year        = {2019},
+  type        = {Working Paper},
+  number      = {25987},
+  doi         = {10.3386/w25987}
 }
 
-@article{lenza_moutachaker_paredes_2023,
-  author  = {Lenza, Michele and Moutachaker, Ines and Paredes, Joan},
-  title   = {Forecasting euro area inflation with machine learning models},
-  journal = {ECB Research Bulletin},
-  year    = {2023},
-  institution = {European Central Bank}
+@article{atkeson_ohanian_2001,
+  author  = {Andrew Atkeson and Lee E. Ohanian},
+  title   = {Are {P}hillips Curves Useful for Forecasting Inflation?},
+  journal = {Federal Reserve Bank of Minneapolis Quarterly Review},
+  year    = {2001},
+  volume  = {25},
+  number  = {1},
+  pages   = {2--11}
+}
+
+@article{staiger_stock_watson_1997,
+  author  = {Douglas Staiger and James H. Stock and Mark W. Watson},
+  title   = {The {NAIRU}, Unemployment and Monetary Policy},
+  journal = {Journal of Economic Perspectives},
+  year    = {1997},
+  volume  = {11},
+  number  = {1},
+  pages   = {33--49},
+  doi     = {10.1257/jep.11.1.33}
+}
+
+%% -----------------------------------------------------------------
+%% ARIMA / BOX-JENKINS
+%% -----------------------------------------------------------------
+
+@book{box_jenkins_1976,
+  author    = {George E. P. Box and Gwilym M. Jenkins},
+  title     = {Time Series Analysis: Forecasting and Control},
+  publisher = {Holden-Day},
+  address   = {San Francisco},
+  year      = {1976}
+}
+
+@article{ljung_box_1978,
+  author  = {Greta M. Ljung and George E. P. Box},
+  title   = {On a Measure of Lack of Fit in Time Series Models},
+  journal = {Biometrika},
+  year    = {1978},
+  volume  = {65},
+  number  = {2},
+  pages   = {297--303},
+  doi     = {10.1093/biomet/65.2.297}
+}
+
+%% -----------------------------------------------------------------
+%% UNIT ROOT TESTS
+%% -----------------------------------------------------------------
+
+@article{dickey_fuller_1979,
+  author  = {David A. Dickey and Wayne A. Fuller},
+  title   = {Distribution of the Estimators for Autoregressive Time Series with a Unit Root},
+  journal = {Journal of the American Statistical Association},
+  year    = {1979},
+  volume  = {74},
+  number  = {366},
+  pages   = {427--431},
+  doi     = {10.2307/2286348}
+}
+
+@article{phillips_perron_1988,
+  author  = {Peter C. B. Phillips and Pierre Perron},
+  title   = {Testing for a Unit Root in Time Series Regression},
+  journal = {Biometrika},
+  year    = {1988},
+  volume  = {75},
+  number  = {2},
+  pages   = {335--346},
+  doi     = {10.1093/biomet/75.2.335}
+}
+
+@article{kpss_1992,
+  author  = {Denis Kwiatkowski and Peter C. B. Phillips and Peter Schmidt and Yongcheol Shin},
+  title   = {Testing the Null Hypothesis of Stationarity against the Alternative of a Unit Root},
+  journal = {Journal of Econometrics},
+  year    = {1992},
+  volume  = {54},
+  number  = {1--3},
+  pages   = {159--178},
+  doi     = {10.1016/0304-4076(92)90104-Y}
+}
+
+%% -----------------------------------------------------------------
+%% STRUCTURAL BREAKS
+%% -----------------------------------------------------------------
+
+@article{chow_1960,
+  author  = {Gregory C. Chow},
+  title   = {Tests of Equality Between Sets of Coefficients in Two Linear Regressions},
+  journal = {Econometrica},
+  year    = {1960},
+  volume  = {28},
+  number  = {3},
+  pages   = {591--605},
+  doi     = {10.2307/1910133}
+}
+
+@article{andrews_1993,
+  author  = {Donald W. K. Andrews},
+  title   = {Tests for Parameter Instability and Structural Change with Unknown Change Point},
+  journal = {Econometrica},
+  year    = {1993},
+  volume  = {61},
+  number  = {4},
+  pages   = {821--856},
+  doi     = {10.2307/2951764}
+}
+
+@article{bai_perron_1998,
+  author  = {Jushan Bai and Pierre Perron},
+  title   = {Estimating and Testing Linear Models with Multiple Structural Changes},
+  journal = {Econometrica},
+  year    = {1998},
+  volume  = {66},
+  number  = {1},
+  pages   = {47--78},
+  doi     = {10.2307/2998540}
+}
+
+@article{bai_perron_2003,
+  author  = {Jushan Bai and Pierre Perron},
+  title   = {Computation and Analysis of Multiple Structural Change Models},
+  journal = {Journal of Applied Econometrics},
+  year    = {2003},
+  volume  = {18},
+  number  = {1},
+  pages   = {1--22},
+  doi     = {10.1002/jae.659}
+}
+
+%% -----------------------------------------------------------------
+%% INFORMATION CRITERIA
+%% -----------------------------------------------------------------
+
+@article{akaike_1974,
+  author  = {Hirotugu Akaike},
+  title   = {A New Look at the Statistical Model Identification},
+  journal = {IEEE Transactions on Automatic Control},
+  year    = {1974},
+  volume  = {19},
+  number  = {6},
+  pages   = {716--723},
+  doi     = {10.1109/TAC.1974.1100705}
+}
+
+@article{schwarz_1978,
+  author  = {Gideon Schwarz},
+  title   = {Estimating the Dimension of a Model},
+  journal = {Annals of Statistics},
+  year    = {1978},
+  volume  = {6},
+  number  = {2},
+  pages   = {461--464},
+  doi     = {10.1214/aos/1176344136}
+}
+
+%% -----------------------------------------------------------------
+%% GRANGER CAUSALITY / VAR
+%% -----------------------------------------------------------------
+
+@article{granger_1969,
+  author  = {Clive W. J. Granger},
+  title   = {Investigating Causal Relations by Econometric Models and Cross-spectral Methods},
+  journal = {Econometrica},
+  year    = {1969},
+  volume  = {37},
+  number  = {3},
+  pages   = {424--438},
+  doi     = {10.2307/1912791}
+}
+
+%% -----------------------------------------------------------------
+%% COURSE READINGS
+%% -----------------------------------------------------------------
+
+@article{cleveland_mcgill_1985,
+  author  = {William S. Cleveland and Robert McGill},
+  title   = {Graphical Perception and Graphical Methods for Analyzing Scientific Data},
+  journal = {Science},
+  year    = {1985},
+  volume  = {229},
+  number  = {4716},
+  pages   = {828--833},
+  doi     = {10.1126/science.229.4716.828}
+}
+
+@article{makridakis_2018,
+  author  = {Spyros Makridakis and Evangelos Spiliotis and Vassilios Assimakopoulos},
+  title   = {Statistical and Machine Learning Forecasting Methods: Concerns and Ways Forward},
+  journal = {PLOS ONE},
+  year    = {2018},
+  volume  = {13},
+  number  = {3},
+  pages   = {e0194889},
+  doi     = {10.1371/journal.pone.0194889}
 }
