@@ -154,6 +154,70 @@ cat("Number of monthly observations:", nrow(combined), "\n")
 
 
 # ============================================================
+# 2.1 Data Quality Checks
+# ============================================================
+
+# KIG EFTER:
+#   - Er der missing values efter join?
+#   - Er der dubletter i måned-indekset?
+#   - Er der huller i den månedlige tidsserie?
+#   - Er der ekstreme observationer, som bør forklares i teksten?
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
+cat("\n=== Missing values by variable ===\n")
+combined |>
+  tidyr::as_tibble() |>
+  dplyr::summarise(
+    dplyr::across(
+      c(dk_inflation, eu_inflation, dk_unemployment, eu_unemployment),
+      ~ sum(is.na(.x))
+    )
+  ) |>
+  knitr::kable(align = "c")
+
+cat("\n=== Duplicate months ===\n")
+combined |>
+  tidyr::as_tibble() |>
+  dplyr::count(yearmonth) |>
+  dplyr::filter(n > 1) |>
+  knitr::kable(align = "c")
+
+cat("\n=== Gaps in monthly index ===\n")
+combined |>
+  tsibble::scan_gaps() |>
+  knitr::kable(align = "c")
+
+cat("\n=== Extreme observations: Danish inflation ===\n")
+combined |>
+  tidyr::as_tibble() |>
+  dplyr::arrange(dplyr::desc(abs(dk_inflation - mean(dk_inflation, na.rm = TRUE)))) |>
+  dplyr::select(yearmonth, dk_inflation, dk_unemployment, eu_inflation, eu_unemployment) |>
+  head(10) |>
+  knitr::kable(digits = 2, align = "c")
+
+cat("\n=== Summary statistics ===\n")
+combined |>
+  tidyr::as_tibble() |>
+  tidyr::pivot_longer(
+    cols = c(dk_inflation, eu_inflation, dk_unemployment, eu_unemployment),
+    names_to = "variable",
+    values_to = "value"
+  ) |>
+  dplyr::group_by(variable) |>
+  dplyr::summarise(
+    n = dplyr::n(),
+    mean = mean(value, na.rm = TRUE),
+    sd = sd(value, na.rm = TRUE),
+    min = min(value, na.rm = TRUE),
+    max = max(value, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  knitr::kable(digits = 2, align = "c")
+
+
+# ============================================================
 # 3. Data Visualisation
 # ============================================================
 
@@ -220,6 +284,33 @@ combined |>
   ) +
   theme(plot.title = element_text(hjust = 0.5))
 
+# KIG EFTER:
+#   - Inflation: er månedernes mønster stabilt på tværs af år?
+#   - Arbejdsløshed: er der højere/lavere måneder, der gentager sig?
+#   - Hvis mønsteret primært skyldes 2021-2023, er det et shock/regime-skift
+#     snarere end almindelig seasonality.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
+combined |>
+  feasts::gg_season(dk_unemployment) +
+  labs(
+    title = "Seasonal Plot: Danish Unemployment",
+    x = "Month",
+    y = "Unemployment (%)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+
+combined |>
+  feasts::gg_subseries(dk_unemployment) +
+  labs(
+    title = "Seasonal Subseries Plot: Danish Unemployment",
+    x = "Month",
+    y = "Unemployment (%)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+
 
 # --- STL decomposition ---
 
@@ -239,6 +330,24 @@ combined |>
   fabletools::components() |>
   autoplot() +
   labs(title = "STL Decomposition: Danish Inflation")
+
+# KIG EFTER:
+#   - Er seasonal-komponenten lille i forhold til trend/remainder?
+#   - For YoY-inflation forventer vi normalt svag seasonality, fordi årlig
+#     procentændring allerede fjerner meget af den almindelige månedsvariation.
+#   - Hvis trend/remainder dominerer, bør teksten fokusere på persistence,
+#     shocks og strukturelle brud frem for stærk seasonality.
+#
+# RESULTAT:
+#   Det kunne godt ligne der var en smule seasonality. Men det er bregrænmset når vi kigger strengt af udsvinget
+
+cat("\n=== STL feature strength ===\n")
+combined |>
+  feasts::features(
+    c(dk_inflation, dk_unemployment, eu_inflation, eu_unemployment),
+    feat_stl
+  ) |>
+  knitr::kable(digits = 3, align = "c")
 
 
 # --- ACF / PACF displays ---
@@ -262,6 +371,15 @@ combined |>
 combined |>
   feasts::gg_tsdisplay(eu_unemployment, plot_type = "partial") +
   labs(title = "EU27 Unemployment: Time Series, ACF and PACF")
+
+# KIG EFTER:
+#   - ACF, der falder langsomt: høj persistence og mulig non-stationarity.
+#   - PACF-spike ved lag 1: AR-type model kan være relevant.
+#   - Spikes ved lag 12/24: mulig årlig afhængighed, som kan modelleres med
+#     seasonal ARMA-led. Det er ikke nødvendigvis stærk seasonality.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
 
 
 # ============================================================
@@ -294,6 +412,16 @@ tseries::kpss.test(na.omit(combined$dk_inflation))
 tseries::kpss.test(na.omit(combined$dk_unemployment))
 tseries::kpss.test(na.omit(combined$eu_inflation))
 tseries::kpss.test(na.omit(combined$eu_unemployment))
+
+# KIG EFTER:
+#   - ADF p < 0.05: reject non-stationarity.
+#   - KPSS p > 0.05: fail to reject stationarity.
+#   - Hvis ADF og KPSS er uenige, så skriv at evidensen er mixed/borderline.
+#   - Vælg derefter enten levels eller first differences og vær konsekvent i
+#     både kode og rapporttekst.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
 
 
 # --- First differences, kept for optional robustness checks ---
@@ -346,6 +474,28 @@ combined <- combined |>
 #   feasts::gg_tsdisplay(diff_eu_unemployment, plot_type = "partial") +
 #   labs(title = "First-Differenced EU27 Unemployment: ACF and PACF")
 
+cat("\n=== ADF Tests on first differences (H0: Non-stationary) ===\n")
+tseries::adf.test(na.omit(combined$diff_dk_inflation))
+tseries::adf.test(na.omit(combined$diff_dk_unemployment))
+tseries::adf.test(na.omit(combined$diff_eu_inflation))
+tseries::adf.test(na.omit(combined$diff_eu_unemployment))
+
+cat("\n=== KPSS Tests on first differences (H0: Stationary) ===\n")
+tseries::kpss.test(na.omit(combined$diff_dk_inflation))
+tseries::kpss.test(na.omit(combined$diff_dk_unemployment))
+tseries::kpss.test(na.omit(combined$diff_eu_inflation))
+tseries::kpss.test(na.omit(combined$diff_eu_unemployment))
+
+# KIG EFTER:
+#   - First differences bør typisk se mere stationære ud end levels.
+#   - Hvis I modellerer dansk inflation i levels, bruges disse tests som
+#     robusthedstjek og til unemployment/regressors.
+#   - Hvis I modellerer alt i differences, skal ARIMA-afsnittet nedenfor
+#     ændres, så forecast-målet også er diff_dk_inflation.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
 
 # ============================================================
 # 5. Structural Break Test: QLR
@@ -396,6 +546,15 @@ lines(bp, col = "red")
 bp_date <- combined$yearmonth[bp$breakpoints]
 cat("Estimated structural break date(s):", as.character(bp_date), "\n")
 
+# KIG EFTER:
+#   - Er der brud omkring kendte makroperioder, fx lavinflationsperioden eller
+#     inflationschokket efter 2021?
+#   - Hvis ja, skal forecast-resultaterne diskuteres kritisk, fordi én samlet
+#     ARIMA-model kan have svært ved at beskrive flere regimer.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
 
 # ============================================================
 # 6. ARIMA Baseline Model
@@ -428,6 +587,44 @@ cat("Training period:", as.character(min(train$yearmonth)),
 cat("Test period    :", as.character(min(test$yearmonth)),
     "to", as.character(max(test$yearmonth)),
     "(", nrow(test), "obs )\n")
+
+# KIG EFTER:
+#   - Testperioden skal være data, modellen ikke har set.
+#   - De sidste 24 måneder er en enkel holdout-test. Hvis I vil være mere
+#     grundige, kan I senere lave rolling-origin cross-validation.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
+
+# --- 6.0 Simple benchmark models ---
+
+# These models are deliberately simple. ARIMA should beat them out-of-sample
+# before we claim that the extra modelling complexity adds forecast value.
+
+fit_simple_benchmarks <- train |>
+  fabletools::model(
+    mean   = fable::MEAN(dk_inflation),
+    naive  = fable::NAIVE(dk_inflation),
+    snaive = fable::SNAIVE(dk_inflation)
+  )
+
+fc_simple_benchmarks <- fit_simple_benchmarks |>
+  fabletools::forecast(h = nrow(test))
+
+fc_simple_benchmarks |>
+  fabletools::accuracy(test) |>
+  dplyr::select(.model, RMSE, MAE, MAPE, MASE) |>
+  dplyr::arrange(RMSE) |>
+  knitr::kable(digits = 3, align = "c")
+
+# KIG EFTER:
+#   - Hvis ARIMA ikke slår naive/snaive på RMSE eller MAE, er ARIMA ikke en
+#     stærk forecasting-forbedring i testperioden.
+#   - Seasonal naive er især relevant, hvis der er årlig afhængighed.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
 
 
 # --- 6.1 Automatic model selection with no differencing ---
@@ -514,6 +711,16 @@ fit_auto_d0 |>
   feasts::features(.innov, ljung_box, dof = dof_auto_d0, lag = 24) |>
   knitr::kable(digits = 3, align = "c")
 
+# KIG EFTER:
+#   - Residual ACF bør ikke have tydelige signifikante spikes.
+#   - Ljung-Box p > 0.05 betyder, at vi ikke finder klar residual
+#     autocorrelation.
+#   - Det er residualerne, ikke den oprindelige inflation, der bør ligne
+#     white noise.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
 
 # --- 6.5 Forecast from automatic d = 0 model ---
 
@@ -537,11 +744,142 @@ fc_auto_d0 |>
   dplyr::select(.model, RMSE, MAE, MAPE, MASE) |>
   knitr::kable(digits = 3, align = "c")
 
+cat("\n=== Forecast accuracy: simple benchmarks and ARIMA baseline ===\n")
+dplyr::bind_rows(
+  fc_simple_benchmarks |>
+    fabletools::accuracy(test),
+  fc_auto_d0 |>
+    fabletools::accuracy(test)
+) |>
+  dplyr::select(.model, RMSE, MAE, MAPE, MASE) |>
+  dplyr::arrange(RMSE) |>
+  knitr::kable(digits = 3, align = "c")
+
+# KIG EFTER:
+#   - Lavere RMSE/MAE er bedre.
+#   - MASE < 1 betyder, at modellen slår naive benchmark målt med MASE.
+#   - Hvis ARIMA er bedst, kan den bruges som baseline for Phillips curve.
+#   - Hvis naive/snaive er bedst, skal I diskutere hvorfor simple forecasts
+#     klarer sig bedre i perioden.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
+
+# ============================================================
+# 7. Dynamic Regression: Phillips Curve Check
+# ============================================================
+
+# We test whether unemployment adds forecasting information beyond inflation's
+# own ARMA/SARMA dynamics. Since unemployment is non-stationary in levels, the
+# regressor is first-differenced unemployment.
+#
+# IMPORTANT:
+#   The dependent variable here is still dk_inflation in levels, consistent
+#   with the baseline ARMA/SARMA model above. If the report instead chooses
+#   first-differenced inflation as the target, this section should be changed
+#   so the dependent variable is diff_dk_inflation.
+
+train_dyn <- train |>
+  tidyr::drop_na(diff_dk_unemployment)
+
+test_dyn <- test |>
+  tidyr::drop_na(diff_dk_unemployment)
+
+fit_phillips <- train_dyn |>
+  fabletools::model(
+    phillips = fable::ARIMA(
+      dk_inflation ~ diff_dk_unemployment +
+        pdq(p = 0:6, d = 0, q = 0:6) +
+        PDQ(P = 0:2, D = 0, Q = 0:2),
+      stepwise = FALSE,
+      approximation = FALSE
+    )
+  )
+
+report(fit_phillips)
+
+cat("\n=== Information criteria: ARIMA baseline vs Phillips curve ===\n")
+dplyr::bind_rows(
+  fit_auto_d0 |>
+    fabletools::glance() |>
+    dplyr::mutate(model_group = "ARIMA baseline"),
+  fit_phillips |>
+    fabletools::glance() |>
+    dplyr::mutate(model_group = "Phillips curve")
+) |>
+  dplyr::select(model_group, .model, AIC, AICc, BIC, sigma2) |>
+  dplyr::arrange(AICc) |>
+  knitr::kable(digits = 3, align = "c")
+
+fit_phillips |>
+  feasts::gg_tsresiduals() +
+  labs(title = "Phillips Curve Dynamic Regression: Residual Diagnostics")
+
+dof_phillips <- fit_phillips |>
+  broom::tidy() |>
+  dplyr::filter(stringr::str_detect(term, "^ar|^ma|^sar|^sma")) |>
+  nrow()
+
+fit_phillips |>
+  fabletools::augment() |>
+  feasts::features(.innov, ljung_box, dof = dof_phillips, lag = 24) |>
+  knitr::kable(digits = 3, align = "c")
+
+fc_phillips <- fit_phillips |>
+  fabletools::forecast(new_data = test_dyn)
+
+cat("\n=== Forecast accuracy: all main models ===\n")
+dplyr::bind_rows(
+  fc_simple_benchmarks |>
+    fabletools::accuracy(test),
+  fc_auto_d0 |>
+    fabletools::accuracy(test),
+  fc_phillips |>
+    fabletools::accuracy(test_dyn)
+) |>
+  dplyr::select(.model, RMSE, MAE, MAPE, MASE) |>
+  dplyr::arrange(RMSE) |>
+  knitr::kable(digits = 3, align = "c")
+
+# KIG EFTER:
+#   - Er koefficienten på diff_dk_unemployment statistisk signifikant?
+#   - Har Phillips curve-modellen lavere AICc/BIC end ARIMA baseline?
+#   - Har Phillips curve-modellen lavere RMSE/MAE i testperioden?
+#   - Er residualerne stadig uden tydelig autocorrelation?
+#   - Hvis svaret er nej til de fleste punkter, har unemployment begrænset
+#     forecasting-værdi for dansk inflation i jeres simple specifikation.
+#
+# RESULTAT:
+#   Skriv jeres korte konklusion her.
+
+
+# ============================================================
+# 8. Final Forecast Readiness Checklist
+# ============================================================
+
+# UDFYLD FØR I SKRIVER RESULTATAFSNITTET:
+#
+# [ ] Data har ingen uventede missing values, dubletter eller gaps.
+# [ ] Outliers/shocks er identificeret og forklaret.
+# [ ] I har konkluderet om inflation har stærk/svag seasonality.
+# [ ] ADF/KPSS-konklusionen er skrevet klart.
+# [ ] I har valgt levels eller first differences og bruger samme valg i kode
+#     og rapporttekst.
+# [ ] Structural breaks er testet og diskuteret.
+# [ ] ARIMA baseline er sammenlignet med naive og seasonal naive.
+# [ ] Residualerne fra valgt model ligner white noise.
+# [ ] Phillips curve-modellen er testet mod ARIMA baseline.
+# [ ] Endelig model er valgt ud fra både in-sample fit, residualdiagnostik og
+#     out-of-sample forecast accuracy.
+#
+# ENDELIG KONKLUSION:
+#   Skriv her hvilken model I vælger, hvorfor, og hvilke begrænsninger der er.
+
 
 # ============================================================
 # Stop here for now
 # ============================================================
 
-# The next step would be to select the preferred ARMA/SARMA specification
-# based on AICc/BIC, residual diagnostics, and forecast accuracy.
-# After that, the dynamic regression / Phillips curve model can be updated.
+# The next step is to transfer the selected results into the report and make
+# sure the report text matches the modelling choice in this script.
