@@ -1,53 +1,70 @@
 % ============================================================
 %  3. DATA
 % ============================================================
+\textcolor{teal}{Signoff:}\newline
+\bigskip
 \chapter{Data}\label{sec:data}
- 
-All four series are retrieved from FRED (Federal Reserve Bank of St.\ Louis)
-and share consistent, harmonised definitions across Denmark and the Eurozone.
- 
+The analysis in this paper draws on two monthly time series sourced from Eurostat, covering Denmark and the EU27 over the period from December 2000 to March 2026. The first is the Harmonised Index of Consumer Prices (HICP), measured as the annual rate of change in percent \parencite{eurostat_hicp}. The second is the monthly unemployment rate, expressed as a percentage of the labour force for both sexes and all ages, not seasonally adjusted \parencite{eurostat_unemployment}. Both series are available from 1997, but the working sample is restricted to the period of overlapping observations after joining the two datasets.
 \begin{table}[h!]
 \centering
-\begin{tabular}{llll}
+\begin{tabular}{lll}
 \toprule
-\textbf{Series} & \textbf{Region} & \textbf{FRED code} & \textbf{Definition} \\
+\textbf{Series} & \textbf{Region} & \textbf{Definition} \\
 \midrule
-Unemployment rate & Denmark   & \texttt{LRHUADTTDKM156N}   & OECD harmonised, 25+, monthly \\
-Unemployment rate & Euro area & \texttt{LRHUADTTEZM156N}   & OECD harmonised, 25+, monthly \\
-HICP              & Denmark   & \texttt{CP0000DKM086NEST}  & Eurostat harmonised, not seas.\ adj., monthly \\
-HICP              & Euro area & \texttt{CP0000EZ19M086NEST}& Eurostat harmonised, not seas.\ adj., monthly \\
+Unemployment rate & Denmark & Eurostat harmonised, Total, monthly\\
+Unemployment rate & EU (27 countries)  & Eurostat harmonised, Total, monthly\\
+HICP rates of change & Denmark  & Eurostat harmonised, not seas.\ adj., monthly \\
+HICP rates of change &  EU (27 countries)  & Eurostat harmonised, not seas.\ adj., monthly \\
 \bottomrule
 \end{tabular}
-\caption{Data sources. Both unemployment series use identical OECD methodology
-and the same 25+ age bracket, ensuring cross-country comparability.
-Both HICP series are constructed under the same Eurostat rules,
-making the inflation measures directly comparable.}
+\caption{Data sources. All series are retrieved directly from Eurostat.}
 \end{table}
-
-Since the Phillips curve concerns inflation rather than the price level, the HICP indices are transformed into year-on-year inflation rates. Inflation is computed as
-
-\[
-\pi_t = 100 \times \left(\frac{HICP_t}{HICP_{t-12}} - 1\right),
-\]
-
-where \(HICP_t\) denotes the harmonised consumer price index in month \(t\). Unemployment is kept in levels, as it is already measured as a rate.
 
 
 
 \subsection{Inspections of raw data}
+\textcolor{teal}{Signoff:}
 \subsubsection{Looking for trend}
-Both unemployment series display a clear downward trend over the sample period, with Danish and Eurozone rates moving broadly in parallel. The inflation series tell a different story: Eurozone inflation exhibits a more pronounced upward trend, while Danish inflation remains comparatively flat with only a marginal positive drift. Both regions share a sharp and transitory spike around the COVID-19 period, which stands out as the dominant feature of the recent sample. 
+\ref{fig:raw_data} plots the four series over the full sample from December 2000 to March 2026. Danish and EU27 inflation follow a broadly similar trajectory: both series remain relatively stable in the range of 0 to 4 percent through most of the sample, before surging sharply in 2022 in the wake of post-COVID supply disruptions and energy price shocks, reaching approximately 10 percent for Denmark and 12 percent for the EU27. Both series have since retreated toward pre-shock levels. The co-movement between the two inflation series is visually striking and motivates the inclusion of EU27 inflation as a predictor in the multivariate framework.
 
-\textcolor{red}{disse grafer skal laves så man kan læse teksten - sæt stl ind og brug dette til at omtale om der er trend eller ej.}
+The two unemployment series tell a different story. EU27 unemployment displays a clear downward trend over the sample, peaking around 11 to 12 percent during the European sovereign debt crisis in 2012 to 2013 and declining steadily thereafter. Danish unemployment shows no comparable trend, remaining in a narrower band and exhibiting a more cyclical pattern. The financial crisis of 2008 to 2009 is visible as an upward shift in Danish unemployment, followed by a gradual but incomplete recovery. The differing dynamics across the two unemployment series suggest that domestic and European labour market conditions may carry distinct information for Danish inflation.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\linewidth]{billeder/01_Raw_data.png}
+    \caption{Both employment plots show a negative trend, and the inflations trends have a clear upward going trend}
+    \label{fig:raw_data}
+\end{figure}
 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=1\linewidth]{billeder/Trends_in_unemployment_and_inflation.png}
-%     \caption{Both employment plots show a negative trend, and the inflations trends have a clear upward going trend}
-%     \label{fig:raw_data_plot_trend}
-% \end{figure}
+\subsubsection{Initial look at the Philips curve}
 
+The scatter plot reveals a weak negative relationship between Danish unemployment and Danish inflation over the sample period, consistent with the theoretical prediction of the Phillips curve. The fitted line slopes downward, suggesting that lower unemployment is on average 
+associated with higher inflation. However, the relationship is far from tight. We see that the dispersion around the fitted line is substantial, and several observations with low unemployment are associated with very low or even negative inflation, while high inflation observations appear across the full range of unemployment rates. The post-COVID inflation surge is visible as a cluster of high inflation observations at relatively low unemployment levels in the upper left of the plot.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{billeder/02_philips_curve_denmark.png}
+    \caption{Philips curve: Denmark}
+    \label{fig:02_philips_curve_denmark}
+\end{figure}
+
+Overall, the scatter suggests that while a negative correlation exists between the two series, unemployment alone explains little of the variation in Danish inflation. This motivates the use of a formal forecasting framework to assess whether unemployment retains predictive value for inflation once the autocorrelation structure of inflation itself is accounted for.
+
+\subsubsection{Danish and EU inflation co-movement}
+
+\ref{fig:03_denmark_vs_EU_inflation} plots Danish and EU27 inflation over the full sample. The two series track each other closely throughout, displaying near-identical cyclical patterns across all major inflation episodes. Both series declined toward zero in the aftermath of the 2008 financial crisis, briefly turned negative around 2015 amid falling energy prices and deflationary pressure in the euro area, and then surged sharply in 2022 before retreating. The EU27 series reached a slightly higher peak of approximately 12 percent compared to around 10 percent for Denmark, but the timing and shape of the shock are virtually indistinguishable.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{billeder/03_denmark_vs_EU_inflation.png}
+    \caption{Danish and European inflation}
+    \label{fig:03_denmark_vs_EU_inflation}
+\end{figure}
+
+The close co-movement reflects Denmark's deep integration with the European economy and its 
+fixed exchange rate peg to the euro under ERM II, which ties Danish monetary conditions 
+closely to those of the euro area. This suggests that EU27 inflation may carry predictive 
+information for Danish inflation, motivating its inclusion as an additional predictor in the 
+multivariate forecasting model.
 
 \subsubsection{Looking for seasonality}
 
@@ -61,14 +78,12 @@ Both unemployment series display a clear downward trend over the sample period, 
 
 % For Euro-area inflation, the same applies. There is some variation across months, but the pattern is not stable across years. A few high-inflation years create visible spikes, especially later in the year, but this should not be interpreted as normal seasonal behavior
 
-\textcolor{red}{disse grafer skal også ændres}
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=1\linewidth]{billeder/Seasonality_in_unemployment_and_inflation.png}
-%     \caption{Unemployment shows some seasonal behavior, especially in the euro area, while HICP shows little clear seasonality in this plot.}
-%     \label{fig:index_seasonal_plot}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{billeder/04_seasonal_plots.png}
+    \caption{Unemployment shows some seasonal behavior, especially in the euro area, while HICP shows little clear seasonality in this plot.}
+    \label{fig:index_seasonal_plot}
+\end{figure}
 
 
 The seasonal plots indicate some recurring seasonal variation in unemployment, particularly for the euro area, where unemployment tends to be higher in winter and lower during the summer months. The pattern is weaker for Danish unemployment. In contrast, inflation displays less systematic seasonality. The inflation plots are dominated by a few high-inflation years, suggesting that variation is driven more by macroeconomic shocks than by stable monthly seasonal patterns.
@@ -79,7 +94,7 @@ To examine this pattern more clearly, we next consider seasonal subseries plots,
 
 
 
-\textcolor{red}{grafer skal fikses - tilføj at alle seasonal subseries plots can be seen in the appendix in \ref{fig: All seasonal subseries plots}}
+% \textcolor{red}{grafer skal fikses - tilføj at alle seasonal subseries plots can be seen in the appendix in \ref{fig: All seasonal subseries plots}}
 
 % \begin{figure}[H]
 %     \centering
@@ -89,15 +104,25 @@ To examine this pattern more clearly, we next consider seasonal subseries plots,
 % \end{figure}
 
 
-
-
-
-
 \subsubsection{Testing for stationarity}
 
-Before estimating the forecasting models, we assess stationarity using both the Augmented Dickey-Fuller (ADF) test and the KPSS test. The ADF test has non-stationarity as the null hypothesis, while the KPSS test has stationarity as the null hypothesis. Since the HICP indices have already been transformed into year-on-year inflation rates, the inflation variables are tested in growth-rate form.
+Before estimating the forecasting models, we assess stationarity using both the Augmented Dickey-Fuller (ADF) test and the KPSS test. The ADF test has non-stationarity as the null hypothesis, while the KPSS test has stationarity as the null hypothesis.
 
-\textcolor{red}{vi skla kommentere på at p>0.1 er næste grænseniveau eftersom vi siger der er weak evidence.}
+% \begin{table}[H]
+% \centering
+% \caption{Stationarity tests in levels}
+% \begin{tabular}{lcccc}
+% \hline
+% Variable & ADF p-value & ADF conclusion & KPSS p-value & KPSS conclusion \\
+% \hline
+% Danish unemployment & 0.7156 & Non-stationary & 0.0238 & Non-stationary \\
+% Euro-area unemployment & 0.9587 & Non-stationary & 0.0227 & Non-stationary \\
+% Danish inflation & 0.0996 & Weak evidence of stationarity & $>0.10$ & Stationary \\
+% Euro-area inflation & 0.2812 & Non-stationary & $>0.10$ & Stationary \\
+% \hline
+% \end{tabular}
+% \label{tab:stationarity_levels}
+% \end{table}
 
 \begin{table}[H]
 \centering
@@ -106,22 +131,28 @@ Before estimating the forecasting models, we assess stationarity using both the 
 \hline
 Variable & ADF p-value & ADF conclusion & KPSS p-value & KPSS conclusion \\
 \hline
-Danish unemployment & 0.7156 & Non-stationary & 0.0238 & Non-stationary \\
-Euro-area unemployment & 0.9587 & Non-stationary & 0.0227 & Non-stationary \\
-Danish inflation & 0.0996 & Weak evidence of stationarity & $>0.10$ & Stationary \\
-Euro-area inflation & 0.2812 & Non-stationary & $>0.10$ & Stationary \\
+Danish inflation      & $<0.01$ & Stationary     & $>0.10$ & Stationary     \\
+EU27 inflation        & $0.011$ & Stationary     & $0.048$ & Non-stationary \\
+Danish unemployment   & $0.821$ & Non-stationary & $0.012$ & Non-stationary \\
+EU27 unemployment     & $0.827$ & Non-stationary & $<0.01$ & Non-stationary \\
 \hline
 \end{tabular}
 \label{tab:stationarity_levels}
 \end{table}
 
-The results indicate that both unemployment variables are non-stationary in levels, as the ADF tests fail to reject non-stationarity and the KPSS tests reject stationarity. For inflation, the evidence is more mixed: the KPSS tests do not reject stationarity, while the ADF tests provide weaker evidence. Overall, unemployment appears clearly non-stationary, whereas inflation is more consistent with stationarity in levels.
+The stationarity tests broadly confirm what the time series plots suggest. Both unemployment 
+series are non-stationary in levels according to both the ADF and KPSS tests, and will be 
+first-differenced prior to estimation. The inflation series, sourced directly as year-on-year 
+rates of change, are already stationary transformations of the underlying price indices. 
+Danish inflation is confirmed stationary by both tests, while EU27 inflation yields mixed 
+results, though this is not uncommon given the sharp but transitory nature of the 2022 
+inflation surge. Both inflation series are used in levels throughout the analysis.
 
 
 
-\subsubsection{Plotting ACF for stationarity}
-The ACF plots support the findings from the stationarity tests. Both unemployment series display slowly declining autocorrelations that remain significant across many lags, indicating strong persistence and suggesting non-stationarity in levels. The inflation series are also persistent, but their autocorrelations decline more clearly toward zero. This is consistent with the mixed stationarity test results for inflation, where the evidence for non-stationarity is weaker than for unemployment.
-\textcolor{red}{fix}
+% \subsubsection{Plotting ACF for stationarity}
+% The ACF plots support the findings from the stationarity tests. Both unemployment series display slowly declining autocorrelations that remain significant across many lags, indicating strong persistence and suggesting non-stationarity in levels. The inflation series are also persistent, but their autocorrelations decline more clearly toward zero. This is consistent with the mixed stationarity test results for inflation, where the evidence for non-stationarity is weaker than for unemployment.
+
 
 % \begin{figure}[H]
 %     \centering
@@ -134,113 +165,140 @@ The ACF plots support the findings from the stationarity tests. Both unemploymen
 
 \subsubsection{Making the data stationary}
 
-Since the level variables show evidence of non-stationarity, the variables are transformed using first differences:
-
+The two unemployment series are non-stationary in levels and are therefore transformed 
+using first differences:
 \[
 \Delta y_t = y_t - y_{t-1}.
 \]
-
-First differencing is chosen because it provides clear evidence of stationarity across all four variables. Seasonal differencing was also considered due to indications of annual dependence in the seasonal plots and ACFs, but it did not stationarize the series as clearly as first differencing. Any remaining seasonal dynamics are therefore handled in the modelling stage rather than by applying seasonal differencing mechanically to all variables.
-
-\begin{table}[H]
-\centering
-\caption{Stationarity tests after first differencing}
-\begin{tabular}{lccc}
-\hline
-Variable & ADF p-value & KPSS p-value & Conclusion \\
-\hline
-Danish unemployment & $<0.01$ & $>0.10$ & Stationary \\
-Euro-area unemployment & $<0.01$ & $>0.10$ & Stationary \\
-Danish inflation & $<0.01$ & $>0.10$ & Stationary \\
-Euro-area inflation & 0.0114 & $>0.10$ & Stationary \\
-\hline
-\end{tabular}
-\label{tab:stationarity_first_diff}
-\end{table}
-
-The tests confirm that the first-differenced variables are stationary: the ADF tests reject non-stationarity, while the KPSS tests fail to reject stationarity. The ACF plots in Figure~\ref{fig:difference_ACF_plot} support this conclusion, as the slow decay observed in levels is largely removed. Some seasonal autocorrelation remains, especially for euro-area unemployment around lags 12 and 24, suggesting that seasonal dynamics may still be relevant in the forecasting models.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=1\linewidth]{billeder/difference_ACF_plot.png}
-%     \caption{ACF plots of the first-differenced variables}
-%     \label{fig:difference_ACF_plot}
-% \end{figure}
-
-
-\subsection{Univariate ARIMA Benchmark}
-
-The univariate ARIMA model serves as the benchmark model. Its purpose is to assess how well Danish inflation can be forecast using only its own past values. Since the stationarity tests indicate that Danish inflation is stationary after first differencing, the ARIMA benchmark is estimated on first-differenced Danish inflation:
-\[
-\Delta \pi_t^{DK} = \pi_t^{DK} - \pi_{t-1}^{DK}.
-\]
-
-The selected ARIMA benchmark for first-differenced Danish inflation is
-\[
-ARIMA(1,0,1)(0,0,1)_{12}.
-\]
-This specification includes one autoregressive term, one moving-average term, and one seasonal moving-average term at the annual frequency. The seasonal component indicates that some annual dependence remains in Danish inflation, consistent with the earlier ACF and PACF evidence around lag 12. Thus, seasonality is handled within the ARIMA specification rather than through additional seasonal differencing. This avoids over-differencing while still allowing the model to capture seasonal dynamics.
-
-\textcolor{red}{fix}
+The inflation series are sourced directly as year-on-year rates of change and are used 
+in levels throughout. Seasonal differencing was also considered due to indications of 
+annual dependence in the seasonal plots and ACFs, but first differencing provided 
+clearer evidence of stationarity. Any remaining seasonal dynamics are handled in the 
+modelling stage rather than by applying seasonal differencing mechanically.
 
 \begin{table}[H]
 \centering
-\caption{Information criteria for the ARIMA benchmark}
-\begin{tabular}{lccc}
+\caption{Stationarity tests in first differences}
+\begin{tabular}{lcccc}
 \hline
-Model & AIC & AICc & BIC \\
+Variable & ADF p-value & ADF conclusion & KPSS p-value & KPSS conclusion \\
 \hline
-ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
-\hline
-\end{tabular}
-\label{tab:arima_benchmark_ic}
-\end{table}
-
-The residual diagnostics indicate that the ARIMA benchmark is adequate. The residual ACF shows no clear remaining autocorrelation, and the Ljung-Box test fails to reject the null hypothesis of no residual autocorrelation at lag 24:
-\[
-Q(24) = 25.3508, \qquad p = 0.3869.
-\]
-Hence, the model appears to capture the main serial dependence in first-differenced Danish inflation. Some outliers remain, likely reflecting the exceptional post-COVID inflation period, but there is no strong evidence of systematic autocorrelation left in the residuals.
-
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.85\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
-%     \caption{Residual diagnostics for the ARIMA benchmark}
-%     \label{fig:arima_benchmark_residuals}
-% \end{figure}
-
-
-\subsection{Dynamic Regression: Phillips Curve Specification}
-
-To test whether unemployment adds forecasting information beyond inflation's own past dynamics, we estimate a dynamic regression model with ARIMA errors:
-\[
-\Delta \pi_t^{DK}
-=
-\alpha
-+
-\beta \Delta u_t^{DK}
-+
-\varepsilon_t.
-\]
-The selected error specification is again \(ARIMA(1,0,1)(0,0,1)_{12}\). The estimated coefficient on differenced Danish unemployment is \(-0.0041\), with a standard error of \(0.0234\). The coefficient is close to zero and statistically insignificant, suggesting that changes in Danish unemployment do not add explanatory power for changes in Danish inflation in this simple Phillips curve specification. \textcolor{red}{stadig bare lidt indlende, så der mangler lidt summary eller reports af vores fit}
-
-Model comparison also favours the univariate ARIMA benchmark. The ARIMA benchmark has lower AIC, AICc, and BIC values than the dynamic regression model, indicating that the additional unemployment variable does not improve in-sample fit once model complexity is penalised.
-
-\begin{table}[H]
-\centering
-\caption{Model comparison: ARIMA benchmark and dynamic regression}
-\begin{tabular}{lccc}
-\hline
-Model & AIC & AICc & BIC \\
-\hline
-ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
-Dynamic regression & 146.48 & 146.68 & 165.01 \\
+Danish inflation      & $<0.01$ & Stationary & $>0.10$ & Stationary \\
+EU27 inflation        & $0.022$ & Stationary & $>0.10$ & Stationary \\
+Danish unemployment   & $<0.01$ & Stationary & $>0.10$ & Stationary \\
+EU27 unemployment     & $<0.01$ & Stationary & $>0.10$ & Stationary \\
 \hline
 \end{tabular}
-\label{tab:arima_dyn_comparison}
+\label{tab:stationarity_differences}
 \end{table}
 
-The residual diagnostics for the dynamic regression are also acceptable. The Ljung-Box test yields a p-value of \(0.3622\), so the null of no residual autocorrelation is not rejected. However, since the unemployment coefficient is insignificant and the information criteria are worse than for the benchmark model, the simple dynamic regression provides limited support for the Phillips curve as a forecasting relationship.
+The tests confirm stationarity across all series after first differencing, with the ADF 
+tests rejecting non-stationarity and the KPSS tests failing to reject stationarity in 
+every case.
+
+\subsubsection{Structural break test (QLR)}
+
+To test for structural instability in Danish inflation, we apply the Quandt Likelihood 
+Ratio (QLR) test, which scans all candidate break dates within the central 70 percent 
+of the sample and selects the date with the highest F-statistic. The sup-F statistic 
+of 72.98 is highly significant ($p < 0.001$), decisively rejecting the null hypothesis 
+of parameter stability.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{billeder/05_QLR_struc_break_test.png}
+    \caption{Structural breaks}
+    \label{fig:05_struc_break_test}
+\end{figure}
+
+The BIC-optimal partition identifies two structural breaks: December 2012 and August 
+2021. The first break coincides with the tail end of the European sovereign debt crisis, 
+when deflationary pressure began to suppress inflation across the euro area. The second 
+break marks the onset of the post-COVID inflation surge driven by supply chain 
+disruptions and energy price shocks. These breaks are consistent with the patterns 
+observed in Figure~\ref{fig:ts_plot} and confirm that the inflation process has not 
+been stable over the sample period. This structural instability is accounted for in 
+the modelling stage through the use of indicator saturation within the GETS framework.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Skifter har udkommenteret og flyttet næsten til mthodology
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsection{Univariate ARIMA Benchmark}
+% \textcolor{teal}{Signoff:}
+% The univariate ARIMA model serves as the benchmark model. Its purpose is to assess how well Danish inflation can be forecast using only its own past values. Since the stationarity tests indicate that Danish inflation is stationary after first differencing, the ARIMA benchmark is estimated on first-differenced Danish inflation:
+% \[
+% \Delta \pi_t^{DK} = \pi_t^{DK} - \pi_{t-1}^{DK}.
+% \]
+
+% The selected ARIMA benchmark for first-differenced Danish inflation is
+% \[
+% ARIMA(1,0,1)(0,0,1)_{12}.
+% \]
+% This specification includes one autoregressive term, one moving-average term, and one seasonal moving-average term at the annual frequency. The seasonal component indicates that some annual dependence remains in Danish inflation, consistent with the earlier ACF and PACF evidence around lag 12. Thus, seasonality is handled within the ARIMA specification rather than through additional seasonal differencing. This avoids over-differencing while still allowing the model to capture seasonal dynamics.
+
+% \textcolor{red}{fix}
+
+% \begin{table}[H]
+% \centering
+% \caption{Information criteria for the ARIMA benchmark}
+% \begin{tabular}{lccc}
+% \hline
+% Model & AIC & AICc & BIC \\
+% \hline
+% ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
+% \hline
+% \end{tabular}
+% \label{tab:arima_benchmark_ic}
+% \end{table}
+
+% The residual diagnostics indicate that the ARIMA benchmark is adequate. The residual ACF shows no clear remaining autocorrelation, and the Ljung-Box test fails to reject the null hypothesis of no residual autocorrelation at lag 24:
+% \[
+% Q(24) = 25.3508, \qquad p = 0.3869.
+% \]
+% Hence, the model appears to capture the main serial dependence in first-differenced Danish inflation. Some outliers remain, likely reflecting the exceptional post-COVID inflation period, but there is no strong evidence of systematic autocorrelation left in the residuals.
+
+% % \begin{figure}[H]
+% %     \centering
+% %     \includegraphics[width=0.85\linewidth]{billeder/plot_residuals_ARIMA_benchmark.png}
+% %     \caption{Residual diagnostics for the ARIMA benchmark}
+% %     \label{fig:arima_benchmark_residuals}
+% % \end{figure}
+
+
+% \subsection{Dynamic Regression: Phillips Curve Specification}
+% \textcolor{teal}{Signoff:}
+% To test whether unemployment adds forecasting information beyond inflation's own past dynamics, we estimate a dynamic regression model with ARIMA errors:
+% \[
+% \Delta \pi_t^{DK}
+% =
+% \alpha
+% +
+% \beta \Delta u_t^{DK}
+% +
+% \varepsilon_t.
+% \]
+% The selected error specification is again \(ARIMA(1,0,1)(0,0,1)_{12}\). The estimated coefficient on differenced Danish unemployment is \(-0.0041\), with a standard error of \(0.0234\). The coefficient is close to zero and statistically insignificant, suggesting that changes in Danish unemployment do not add explanatory power for changes in Danish inflation in this simple Phillips curve specification. \textcolor{red}{stadig bare lidt indlende, så der mangler lidt summary eller reports af vores fit}
+
+% Model comparison also favours the univariate ARIMA benchmark. The ARIMA benchmark has lower AIC, AICc, and BIC values than the dynamic regression model, indicating that the additional unemployment variable does not improve in-sample fit once model complexity is penalised.
+
+% \begin{table}[H]
+% \centering
+% \caption{Model comparison: ARIMA benchmark and dynamic regression}
+% \begin{tabular}{lccc}
+% \hline
+% Model & AIC & AICc & BIC \\
+% \hline
+% ARIMA benchmark & 144.51 & 144.64 & 159.34 \\
+% Dynamic regression & 146.48 & 146.68 & 165.01 \\
+% \hline
+% \end{tabular}
+% \label{tab:arima_dyn_comparison}
+% \end{table}
+
+% The residual diagnostics for the dynamic regression are also acceptable. The Ljung-Box test yields a p-value of \(0.3622\), so the null of no residual autocorrelation is not rejected. However, since the unemployment coefficient is insignificant and the information criteria are worse than for the benchmark model, the simple dynamic regression provides limited support for the Phillips curve as a forecasting relationship.
 
 
 
@@ -249,4 +307,4 @@ The residual diagnostics for the dynamic regression are also acceptable. The Lju
 
 
 
-ntier lige nu generelle hvor er reseach henne lige nu. sætter sene, hvad vil vi gerne lave og hvor vil vi gerne placerer os henne 
+% ntier lige nu generelle hvor er reseach henne lige nu. sætter sene, hvad vil vi gerne lave og hvor vil vi gerne placerer os henne 

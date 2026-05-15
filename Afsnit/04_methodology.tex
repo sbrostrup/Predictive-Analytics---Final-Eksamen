@@ -3,3 +3,81 @@
 % ============================================================
 \chapter{Methodology}\label{sec:methodology}
 
+\section{Forecasting Framework}
+
+All models are estimated on a training sample running from December 2000 to 
+March 2024 and evaluated on a held-out test set covering the final 24 months 
+from April 2024 to March 2026. Model selection and specification are conducted 
+exclusively on the training sample to avoid look-ahead bias. As a robustness 
+check, Time Series Cross-Validation (TSCV) is applied using an expanding window 
+with a minimum training length of 60 months, averaging one-step-ahead forecast 
+errors across the full sample.
+
+\section{ARIMA Benchmark}
+
+The univariate ARIMA model serves as the benchmark, forecasting Danish inflation 
+using only its own past values and imposing no economic structure. The general 
+seasonal ARIMA$(p,d,q)(P,D,Q)_{12}$ model is written as:
+\[
+\Phi_P(B^{12})\,\phi_p(B)\,\Delta^d\Delta^D_{12}\,y_t 
+= \Theta_Q(B^{12})\,\theta_q(B)\,\varepsilon_t
+\]
+where $B$ is the backshift operator, $\phi_p$ and $\theta_q$ are the 
+non-seasonal AR and MA polynomials, $\Phi_P$ and $\Theta_Q$ are their seasonal 
+counterparts, and $\varepsilon_t$ is white noise. Order selection follows 
+\textcite{box1976} and is automated by minimising AICc over a grid of candidate 
+specifications \parencite{hyndman2018}. Residual adequacy is assessed using the 
+Ljung-Box test.
+
+\section{Structural Breaks}
+
+The QLR test identified two structural breaks in Danish inflation: December 2012, 
+coinciding with the tail end of the European sovereign debt crisis, and August 
+2021, marking the onset of the post-COVID inflation surge. Both breaks are 
+incorporated into all models as step dummy variables, taking the value zero 
+before the break date and one thereafter. Omitting these dummies would cause the 
+models to absorb permanent level shifts through the error structure, distorting 
+parameter estimates and degrading forecast performance.
+
+\section{Dynamic Regression with ARIMA Errors}
+
+The dynamic regression model extends the ARIMA benchmark by incorporating 
+external predictors. Danish inflation is modelled as a function of lagged 
+first-differenced unemployment and EU27 inflation, with the remaining serial 
+dependence in the errors captured by an ARIMA process:
+\[
+y_t = \mathbf{x}_t'\boldsymbol{\beta} + \eta_t, \qquad 
+\phi_p(B)\,\eta_t = \theta_q(B)\,\varepsilon_t
+\]
+where $y_t$ is Danish inflation, $\mathbf{x}_t$ contains the external regressors 
+and structural break dummies, and $\eta_t$ follows an ARIMA$(p,0,q)$ process. 
+This formulation tests whether unemployment and European inflation contain 
+predictive information for Danish inflation beyond its own autocorrelation 
+structure.
+
+\section{General-to-Specific Model Selection}
+
+Variable and lag selection for the dynamic regression follows the 
+General-to-Specific (GETS) methodology \parencite{doornik2014}. A General 
+Unrestricted Model (GUM) is specified with up to six lags of first-differenced 
+Danish unemployment, EU27 inflation, and first-differenced EU27 unemployment, 
+together with the two structural break dummies. The GUM is then reduced by 
+sequentially eliminating statistically insignificant regressors at the five 
+percent level. Impulse Indicator Saturation (IIS) and Step Indicator Saturation 
+(SIS) are applied simultaneously to detect individual outliers and additional 
+permanent level shifts that may not have been captured by the pre-specified break 
+dummies. The retained specification is then carried into the fpp3 dynamic 
+regression framework for forecasting.
+
+\section{Forecast Evaluation}
+
+Forecast accuracy is evaluated using the Root Mean Squared Error (RMSE) and 
+Mean Absolute Error (MAE), defined as:
+\[
+\text{RMSE} = \sqrt{\frac{1}{h}\sum_{t=1}^{h}(y_t - \hat{y}_t)^2}, \qquad
+\text{MAE}  = \frac{1}{h}\sum_{t=1}^{h}|y_t - \hat{y}_t|
+\]
+where $h = 24$ is the forecast horizon and $\hat{y}_t$ is the model forecast. 
+RMSE penalises large errors more heavily due to the quadratic term, while MAE 
+treats all errors equally. A model is considered to improve upon the ARIMA 
+benchmark if it achieves a lower RMSE and MAE over the test period.
