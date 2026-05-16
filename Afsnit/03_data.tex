@@ -4,7 +4,7 @@
 \textcolor{teal}{Signoff:}\newline
 \bigskip
 \chapter{Data}\label{sec:data}
-The analysis in this paper draws on two monthly time series sourced from Eurostat, covering Denmark and the EU27 over the period from December 2000 to March 2026. The first is the Harmonised Index of Consumer Prices (HICP), measured as the annual rate of change in percent \parencite{eurostat_hicp}. The second is the monthly unemployment rate, expressed as a percentage of the labour force for both sexes and all ages, not seasonally adjusted \parencite{eurostat_unemployment}. Both series are available from 1997, but the working sample is restricted to the period of overlapping observations after joining the two datasets.
+The analysis in this paper draws on two monthly time series sourced from Eurostat, covering Denmark and the EU27 over the period from December 2000 to March 2026. The first is the Harmonised Index of Consumer Prices (HICP), measured as the annual rate of change in percent \parencite{eurostat_hicp}. The second is the monthly unemployment rate, expressed as a percentage of the labour force for both sexes and all ages, not seasonally adjusted \parencite{eurostat_unemployment}. Most series are available from 1997, but since the european inflation series data only starts in december 2000, the working sample is restricted to the period of overlapping observations after joining the datasets.
 \begin{table}[h!]
 \centering
 \begin{tabular}{lll}
@@ -90,7 +90,9 @@ The seasonal plots indicate some recurring seasonal variation in unemployment, p
 
 % ==== subseries seasonal plot 
 
-To examine this pattern more clearly, we next consider seasonal subseries plots, which compare observations within each calendar month over time. These plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality. The inflation series are instead dominated by specific high-inflation episodes rather than regular monthly movements.
+% jeg ved ikke om der er plads til dette - ellers skal vi droppe de seasonal plots som 
+
+% To examine this pattern more clearly, we next consider seasonal subseries plots, which compare observations within each calendar month over time. These plots confirm that unemployment contains a modest seasonal component, while inflation displays little evidence of stable seasonality. The inflation series are instead dominated by specific high-inflation episodes rather than regular monthly movements.
 
 
 
@@ -216,7 +218,7 @@ The BIC-optimal partition identifies two structural breaks: December 2012 and Au
 when deflationary pressure began to suppress inflation across the euro area. The second 
 break marks the onset of the post-COVID inflation surge driven by supply chain 
 disruptions and energy price shocks. These breaks are consistent with the patterns 
-observed in Figure~\ref{fig:ts_plot} and confirm that the inflation process has not 
+observed in Figure~\ref{fig:raw_data} and confirm that the inflation process has not 
 been stable over the sample period. This structural instability is accounted for in 
 the modelling stage through the use of indicator saturation within the GETS framework.
 
