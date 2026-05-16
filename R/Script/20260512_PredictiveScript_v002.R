@@ -1,19 +1,24 @@
 # ============================================================
 # 0. Setup
 # ============================================================
-
-rm(list = ls())
+# rm(list = ls())
+# dev.off()
 
 library(tidyverse)
 library(lubridate)
 library(knitr)
+library(patchwork)
 library(fpp3)
 library(tseries)
+library(strucchange)
+library(gets)
 library(vars)
 library(dplyr)
 library(conflicted)
+
 conflict_prefer("select", "dplyr")
 conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
 
 
 # ============================================================
@@ -22,27 +27,42 @@ conflict_prefer("filter", "dplyr")
 
 find_script_dir <- function() {
   file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
-  if (length(file_arg) > 0)
+  if (length(file_arg) > 0) {
     return(dirname(normalizePath(sub("^--file=", "", file_arg[1]), mustWork = FALSE)))
+  }
+  
   frame_files <- vapply(sys.frames(), function(x) {
-    ofile <- x$ofile; if (is.null(ofile)) "" else ofile
+    ofile <- x$ofile
+    if (is.null(ofile)) "" else ofile
   }, character(1))
+  
   frame_files <- frame_files[nzchar(frame_files)]
-  if (length(frame_files) > 0)
+  
+  if (length(frame_files) > 0) {
     return(dirname(normalizePath(frame_files[length(frame_files)], mustWork = FALSE)))
+  }
+  
   getwd()
 }
 
 find_data_dir <- function(start_dir) {
   candidate_names <- c("Data - csv.", "Data - csv")
   current_dir <- normalizePath(start_dir, mustWork = FALSE)
+  
   repeat {
-    existing <- file.path(current_dir, candidate_names)[dir.exists(file.path(current_dir, candidate_names))]
+    existing <- file.path(current_dir, candidate_names)[
+      dir.exists(file.path(current_dir, candidate_names))
+    ]
+    
     if (length(existing) == 1) return(existing)
+    
     parent_dir <- dirname(current_dir)
+    
     if (identical(parent_dir, current_dir)) break
+    
     current_dir <- parent_dir
   }
+  
   stop("Kunne ikke finde mappen 'Data - csv'.")
 }
 
@@ -69,17 +89,27 @@ inflation_wide <- laes_eurostat_csv(
   file.path(data_dir, "prc_hicp_minr__custom_21465689_linear.csv")
 ) |>
   pivot_wider(names_from = geo, values_from = vaerdi) |>
-  rename(dk_inflation = DK, eu_inflation = EU27_2020)
+  rename(
+    dk_inflation = DK,
+    eu_inflation = EU27_2020
+  )
 
 arbejdsloes_wide <- laes_eurostat_csv(
   file.path(data_dir, "une_rt_m__custom_21465700_linear.csv")
 ) |>
   pivot_wider(names_from = geo, values_from = vaerdi) |>
-  rename(dk_unemployment = DK, eu_unemployment = EU27_2020)
+  rename(
+    dk_unemployment = DK,
+    eu_unemployment = EU27_2020
+  )
 
 df <- full_join(inflation_wide, arbejdsloes_wide, by = "dato") |>
   arrange(dato) |>
   drop_na()
+
+cat("Rows:", nrow(df), "\n")
+cat("Period:", format(min(df$dato), "%b %Y"),
+    "to", format(max(df$dato), "%b %Y"), "\n")
 
 
 # ============================================================
@@ -108,199 +138,547 @@ cat("Sample:", as.character(min(combined_dk$yearmonth)),
 # ADF  H0: Ikke-stationær  → p < 0.05 = stationær
 # KPSS H0: Stationær       → p < 0.05 = ikke-stationær
 
-cat("\n--- Niveauer ---\n")
+cat("\n--- Inflation i niveauer ---\n")
 adf.test(na.omit(combined_dk$dk_inflation))
 kpss.test(na.omit(combined_dk$dk_inflation))
 
-
-cat("\n--- Første differencer ---\n")
+cat("\n--- Inflation i første differencer ---\n")
 adf.test(na.omit(combined_dk$diff_dk_inflation))
 kpss.test(na.omit(combined_dk$diff_dk_inflation))
 
 
 # ============================================================
-# 4. Train / test split  (seneste 12 måneder som test)
+# 4. Strukturelle brudtest
 # ============================================================
 
-test_set  <- combined_dk %>% slice_tail(n = 12)
-train_set <- combined_dk %>% filter(yearmonth < min(test_set$yearmonth))
-
-cat("\nTrain:", as.character(min(train_set$yearmonth)),
-    "to", as.character(max(train_set$yearmonth)),
-    "(", nrow(train_set), "obs )\n")
-cat("Test :", as.character(min(test_set$yearmonth)),
-    "to", as.character(max(test_set$yearmonth)),
-    "(", nrow(test_set), "obs )\n")
-
-
-# ============================================================
-# 5. Strukturelt brud dummy
+# Vi tester først for et mean shift i dansk inflation.
+# Derefter tester vi for brud i relationen:
 #
-# QLR og SIS er enige: bruddet starter oktober 2021.
-# SIS finder at niveauet falder igen september 2023.
-# Break-dummyen er derfor aktiv i intervallet okt 2021 – aug 2023.
-# ============================================================
+#   dk_inflation ~ dk_unemployment
+#
+# Til ARIMA-modellen nedenfor bruger vi én pre/post-break dummy:
+#
+#   post_break = 0 før breakdatoen
+#   post_break = 1 fra breakdatoen og frem
+#
+# Det er en klassisk step dummy / level shift dummy.
 
-break_start <- yearmonth("2021 Oct")
-break_end   <- yearmonth("2023 Jan")
+qlr_data <- combined_dk |>
+  as_tibble() |>
+  transmute(
+    yearmonth,
+    dato = as.Date(yearmonth),
+    dk_inflation,
+    dk_unemployment
+  ) |>
+  drop_na()
 
-train_models <- train_set %>%
-  mutate(break_dummy = as.integer(yearmonth >= break_start & yearmonth <= break_end))
+dk_infl_ts <- ts(
+  qlr_data$dk_inflation,
+  start     = c(year(min(qlr_data$yearmonth)),
+                month(min(qlr_data$yearmonth))),
+  frequency = 12
+)
 
-test_models <- test_set %>%
-  mutate(break_dummy = as.integer(yearmonth >= break_start & yearmonth <= break_end))
+
+# ------------------------------------------------------------
+# 4.1 QLR / supF: mean shift i dansk inflation
+# ------------------------------------------------------------
+
+cat("\n=== QLR supF test: Mean shift i dansk inflation ===\n")
+
+qlr_mean <- Fstats(
+  dk_infl_ts ~ 1,
+  from = 0.15,
+  to   = 0.85
+)
+
+qlr_mean_test <- sctest(qlr_mean, type = "supF")
+print(qlr_mean_test)
+
+bp_mean_1 <- breakpoints(dk_infl_ts ~ 1, breaks = 1)
+
+summary(bp_mean_1)
+
+bp_mean_1_date <- qlr_data$yearmonth[bp_mean_1$breakpoints]
+
+cat("Estimeret brudsdato, mean shift:",
+    as.character(bp_mean_1_date), "\n")
+
+plot(
+  qlr_mean,
+  main = "QLR Test: Mean Shift i dansk inflation",
+  xlab = "Tid",
+  ylab = "F-statistik"
+)
+lines(bp_mean_1, col = "red")
 
 
-# ============================================================
-# 6. Fit modeller
-# ============================================================
+# ------------------------------------------------------------
+# 4.2 QLR / supF: brud i inflation-arbejdsløshed relation
+# ------------------------------------------------------------
 
-fit <- train_models %>%
-  model(
-    # ARIMA uden xreg
-    arima_auto          = ARIMA(dk_inflation,
-                                stepwise = FALSE, approximation = FALSE),
-    arima_auto_seasonal = ARIMA(dk_inflation ~ PDQ(),
-                                stepwise = FALSE, approximation = FALSE),
-    
-    # ARIMA med break-dummy
-    arima_break         = ARIMA(dk_inflation ~ break_dummy,
-                                stepwise = FALSE, approximation = FALSE),
-    arima_break_seasonal = ARIMA(dk_inflation ~ break_dummy + PDQ(),
-                                 stepwise = FALSE, approximation = FALSE),
-    
-    # Dynamisk regression: unemployment som xreg
-    dyn_unemp           = ARIMA(dk_inflation ~ dk_unemployment,
-                                stepwise = FALSE, approximation = FALSE),
-    dyn_unemp_seasonal  = ARIMA(dk_inflation ~ dk_unemployment + PDQ(),
-                                stepwise = FALSE, approximation = FALSE),
-    
-    # Dynamisk regression: unemployment + break
-    dyn_unemp_break          = ARIMA(dk_inflation ~ dk_unemployment + break_dummy,
-                                     stepwise = FALSE, approximation = FALSE),
-    dyn_unemp_break_seasonal = ARIMA(dk_inflation ~ dk_unemployment + break_dummy + PDQ(),
-                                     stepwise = FALSE, approximation = FALSE),
-    
-    # TSLM med break
-    tslm_break        = TSLM(dk_inflation ~ trend() + break_dummy),
-    tslm_break_season = TSLM(dk_inflation ~ trend() + break_dummy + season())
+cat("\n=== QLR supF test: DK inflation ~ DK unemployment ===\n")
+
+qlr_formula <- dk_inflation ~ dk_unemployment
+
+qlr_reg <- Fstats(
+  qlr_formula,
+  data = qlr_data,
+  from = 0.15,
+  to   = 0.85
+)
+
+qlr_reg_test <- sctest(qlr_reg, type = "supF")
+print(qlr_reg_test)
+
+bp_reg_1 <- breakpoints(
+  qlr_formula,
+  data = qlr_data,
+  breaks = 1
+)
+
+summary(bp_reg_1)
+
+bp_reg_1_date <- qlr_data$yearmonth[bp_reg_1$breakpoints]
+
+cat("Estimeret brudsdato, regression:",
+    as.character(bp_reg_1_date), "\n")
+
+plot(
+  qlr_reg,
+  main = "QLR Test: Brud i inflation-arbejdsløshed relation",
+  xlab = "Tid",
+  ylab = "F-statistik"
+)
+lines(bp_reg_1, col = "red")
+
+
+# ------------------------------------------------------------
+# 4.3 Pre/post-break regressioner
+# ------------------------------------------------------------
+
+cat("\n--- Phillips-kurve FØR regression-break ---\n")
+summary(
+  lm(
+    dk_inflation ~ dk_unemployment,
+    data = qlr_data,
+    subset = yearmonth < bp_reg_1_date
+  )
+)
+
+cat("\n--- Phillips-kurve EFTER regression-break ---\n")
+summary(
+  lm(
+    dk_inflation ~ dk_unemployment,
+    data = qlr_data,
+    subset = yearmonth >= bp_reg_1_date
+  )
+)
+
+
+# ------------------------------------------------------------
+# 4.4 Bai-Perron: multiple brud
+# ------------------------------------------------------------
+
+cat("\n=== Bai-Perron: multiple brud i regressionen ===\n")
+
+bp_reg_multi <- breakpoints(
+  qlr_formula,
+  data = qlr_data,
+  breaks = 4
+)
+
+summary(bp_reg_multi)
+confint(bp_reg_multi)
+
+bp_reg_multi_dates <- qlr_data$yearmonth[bp_reg_multi$breakpoints]
+
+cat("Estimerede brudsdatoer:",
+    paste(as.character(bp_reg_multi_dates), collapse = ", "), "\n")
+
+qlr_regimes <- qlr_data |>
+  mutate(
+    regime = cut(
+      row_number(),
+      breaks = c(0, bp_reg_multi$breakpoints, n()),
+      labels = paste("Regime", seq_along(c(bp_reg_multi$breakpoints, n()))),
+      include.lowest = TRUE
+    )
   )
 
+qlr_regimes |>
+  group_by(regime) |>
+  summarise(
+    start              = as.character(min(yearmonth)),
+    end                = as.character(max(yearmonth)),
+    n                  = n(),
+    mean_inflation     = mean(dk_inflation, na.rm = TRUE),
+    mean_unemployment  = mean(dk_unemployment, na.rm = TRUE),
+    unemployment_slope = coef(lm(dk_inflation ~ dk_unemployment))[2],
+    .groups = "drop"
+  ) |>
+  kable(
+    digits = 3,
+    align = "c",
+    caption = "Regime-oversigt: Bai-Perron"
+  )
 
-# ============================================================
-# 7. In-sample: informationskriterier
-# ============================================================
-
-fit %>%
-  glance() %>%
-  select(.model, AIC, AICc, BIC, sigma2) %>%
-  arrange(AICc) %>%
-  kable(digits = 3, align = "c", caption = "Informationskriterier")
-
-
-# ============================================================
-# 8. Koefficienter
-# ============================================================
-
-fit %>%
-  tidy() %>%
-  kable(digits = 4, align = "c", caption = "Estimerede koefficienter")
-
-
-
-# ============================================================
-# 9. Ljung-Box test — alle modeller (på træningssæt)
-# ============================================================
-
-# Antal ARMA-parametre per model bruges til dof-korrektion
-# (vi sætter dof = 0 og lader fable håndtere det internt,
-#  da tidy() ikke altid returnerer AR/MA-led for TSLM)
-
-model_names <- c(
-  "arima_auto", "arima_auto_seasonal",
-  "arima_break", "arima_break_seasonal",
-  "dyn_unemp", "dyn_unemp_seasonal",
-  "dyn_unemp_break", "dyn_unemp_break_seasonal",
-  "tslm_break", "tslm_break_season"
-)
-
-map_dfr(model_names, function(m) {
-  fit %>%
-    select(all_of(m)) %>%
-    augment() %>%
-    features(.innov, ljung_box, lag = 12, dof = 0) %>%
-    mutate(.model = m)
-}) %>%
-  select(.model, lb_stat, lb_pvalue) %>%
-  mutate(
-    ok = ifelse(lb_pvalue > 0.05, "✓ Ingen autokor.", "✗ Autokorrelation")
-  ) %>%
-  arrange(lb_pvalue) %>%
-  kable(digits = 4, align = "c", caption = "Ljung-Box test (lag = 24, træningssæt)")
-
-
-# ============================================================
-# 9. Residualdiagnostik
-# ============================================================
-
-walk(c("arima_auto", "arima_break", "dyn_unemp", "dyn_unemp_break",
-       "tslm_break", "tslm_break_season"), function(m) {
-         print(
-           fit %>%
-             select(all_of(m)) %>%
-             gg_tsresiduals() +
-             labs(title = paste("Residualer:", m))
-         )
-       })
-
-
-# ============================================================
-# 10. Forecast og accuracy (24-måneders test)
-# ============================================================
-
-# Modeller med xreg kræver new_data; rene ARIMA kan bruge h
-fc <- bind_rows(
-  fit %>% select(arima_auto)           %>% forecast(h = nrow(test_models)),
-  fit %>% select(arima_auto_seasonal)  %>% forecast(h = nrow(test_models)),
-  fit %>% select(arima_break)          %>% forecast(new_data = test_models),
-  fit %>% select(arima_break_seasonal) %>% forecast(new_data = test_models),
-  fit %>% select(dyn_unemp)            %>% forecast(new_data = test_models),
-  fit %>% select(dyn_unemp_seasonal)   %>% forecast(new_data = test_models),
-  fit %>% select(dyn_unemp_break)          %>% forecast(new_data = test_models),
-  fit %>% select(dyn_unemp_break_seasonal) %>% forecast(new_data = test_models),
-  fit %>% select(tslm_break)           %>% forecast(new_data = test_models),
-  fit %>% select(tslm_break_season)    %>% forecast(new_data = test_models)
-)
-
-fc %>%
-  accuracy(test_set) %>%
-  select(.model, RMSE, MAE, MAPE) %>%
-  arrange(RMSE) %>%
-  kable(digits = 3, align = "c", caption = "Forecast accuracy — 12-måneders test")
-
-
-# ============================================================
-# 11. Forecast plot
-# ============================================================
-
-fc %>%
-  autoplot(
-    combined_dk %>% filter(yearmonth >= yearmonth("2022 Jan")),
-    level = c(80, 95)
+ggplot(qlr_regimes, aes(x = dato, y = dk_inflation, colour = regime)) +
+  geom_line(linewidth = 0.8) +
+  geom_vline(
+    xintercept = as.Date(bp_reg_multi_dates),
+    linetype = "dashed",
+    colour = "red"
   ) +
-  facet_wrap(~ .model, ncol = 2) +
   labs(
-    title = "Forecasts: alle modeller",
-    x = "Måned", y = "Dansk inflation (YoY, %)"
+    title = "Dansk inflation: strukturelle regimer",
+    x = "Måned",
+    y = "Inflation (YoY, %)",
+    colour = NULL
   ) +
   theme(plot.title = element_text(hjust = 0.5))
 
 
+# ------------------------------------------------------------
+# 4.5 Valg af breakdato til ARIMA-modeller
+# ------------------------------------------------------------
+
+# Til ARIMA-modellen bruger vi mean-shift breaket, fordi ARIMA-modellen
+# nedenfor handler om inflationens niveau, ikke om regressionsrelationen
+# til arbejdsløshed.
+#
+# Hvis du hellere vil bruge regression-breaket, kan du ændre linjen til:
+#   break_date <- bp_reg_1_date
+
+break_date <- bp_mean_1_date
+
+cat("\nBreakdato anvendt i ARIMA-modeller:",
+    as.character(break_date), "\n")
+
+
+# ============================================================
+# 5. Train / test split
+# ============================================================
+
+# Vi bruger seneste 12 måneder som test.
+# Skift slice_tail(n = 12) til n = 24, hvis du ønsker 2 års test.
+
+test_set <- combined_dk %>%
+  slice_tail(n = 12)
+
+train_set <- combined_dk %>%
+  filter(yearmonth < min(test_set$yearmonth))
+
+cat("\nTrain:", as.character(min(train_set$yearmonth)),
+    "to", as.character(max(train_set$yearmonth)),
+    "(", nrow(train_set), "obs )\n")
+
+cat("Test :", as.character(min(test_set$yearmonth)),
+    "to", as.character(max(test_set$yearmonth)),
+    "(", nrow(test_set), "obs )\n")
+
+# ============================================================
+# 6. Pre/post-break dummies: to structural breaks
+# ============================================================
+
+# Vi bruger de to breakdatoer fra Bai-Perron-testen.
+# Hvis bp_reg_multi_dates indeholder flere end to breaks, tager vi de to første.
+# Alternativt kan du hardcode dem:
+# break_date_1 <- yearmonth("2013 Jan")
+# break_date_2 <- yearmonth("2021 Dec")
+
+break_dates <- sort(bp_reg_multi_dates)
+break_date_1 <- break_dates[1]
+break_date_2 <- break_dates[2]
+
+
+cat("\nBreakdato 1 anvendt i ARIMA-modeller:",
+    as.character(break_date_1), "\n")
+
+cat("Breakdato 2 anvendt i ARIMA-modeller:",
+    as.character(break_date_2), "\n")
+
+
+# ------------------------------------------------------------
+# Lav to post-break dummies
+# ------------------------------------------------------------
+
+train_models <- train_set %>%
+  mutate(
+    post_break_1 = as.integer(yearmonth >= break_date_1),
+    post_break_2 = as.integer(yearmonth >= break_date_2)
+  )
+
+test_models <- test_set %>%
+  mutate(
+    post_break_1 = as.integer(yearmonth >= break_date_1),
+    post_break_2 = as.integer(yearmonth >= break_date_2)
+  )
+
+
+# ------------------------------------------------------------
+# Tjek dummyerne omkring begge breakdatoer
+# ------------------------------------------------------------
+
+combined_dk %>%
+  mutate(
+    post_break_1 = as.integer(yearmonth >= break_date_1),
+    post_break_2 = as.integer(yearmonth >= break_date_2)
+  ) %>%
+  filter(
+    (yearmonth >= break_date_1 - 3 & yearmonth <= break_date_1 + 3) |
+      (yearmonth >= break_date_2 - 3 & yearmonth <= break_date_2 + 3)
+  ) %>%
+  select(yearmonth, dk_inflation, post_break_1, post_break_2) %>%
+  kable(
+    digits = 3,
+    align = "c",
+    caption = "Tjek af to post-break dummies"
+  )
+
+
+# ============================================================
+# 7. ARIMA-modeltilpasning: ignorerer vs. håndterer to breaks
+# ============================================================
+
+# Vi sammenligner:
+#
+#   1. arima_ignore_break:
+#      Auto ARIMA uden structural break-dummies.
+#
+#   2. arima_handle_break:
+#      Auto ARIMA med to post-break dummies.
+#
+# Fortolkning:
+#   post_break_1 måler niveauskift fra break 1 og frem.
+#   post_break_2 måler yderligere niveauskift fra break 2 og frem.
+#
+# Dermed får modellen tre implicitte regimer:
+#   Regime 1: før break 1
+#   Regime 2: mellem break 1 og break 2
+#   Regime 3: efter break 2
+
+fit_arima <- train_models %>%
+  model(
+    arima_ignore_break = ARIMA(
+      dk_inflation,
+      stepwise = FALSE,
+      approximation = FALSE
+    ),
+    
+    arima_handle_break = ARIMA(
+      dk_inflation ~ post_break_1 + post_break_2,
+      stepwise = FALSE,
+      approximation = FALSE
+    )
+  )
+
+
+# ------------------------------------------------------------
+# 7.1 Se hvilke ARIMA-modeller der er valgt
+# ------------------------------------------------------------
+
+fit_arima
+
+fit_arima %>%
+  select(arima_ignore_break) %>%
+  report()
+
+fit_arima %>%
+  select(arima_handle_break) %>%
+  report()
+
+
+# ------------------------------------------------------------
+# 7.2 Information criteria
+# ------------------------------------------------------------
+
+fit_arima %>%
+  glance() %>%
+  select(.model, AIC, AICc, BIC, sigma2) %>%
+  arrange(AICc) %>%
+  kable(
+    digits = 3,
+    align = "c",
+    caption = "ARIMA: ignorerer vs. håndterer to structural breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 7.3 Koefficienter
+# ------------------------------------------------------------
+
+fit_arima %>%
+  tidy() %>%
+  kable(
+    digits = 4,
+    align = "c",
+    caption = "Koefficienter: ARIMA med og uden to breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 7.4 Ljung-Box residualtest
+# ------------------------------------------------------------
+
+ljung_box_arima <- function(model_table, model_name, lag_value = 12) {
+  
+  dof_m <- model_table %>%
+    select(all_of(model_name)) %>%
+    tidy() %>%
+    filter(str_detect(term, "^ar|^ma|^sar|^sma")) %>%
+    nrow()
+  
+  model_table %>%
+    select(all_of(model_name)) %>%
+    augment() %>%
+    features(
+      .innov,
+      ljung_box,
+      lag = lag_value,
+      dof = dof_m
+    ) %>%
+    mutate(
+      .model = model_name,
+      dof = dof_m,
+      passes_ljung_box = lb_pvalue > 0.05
+    )
+}
+
+bind_rows(
+  ljung_box_arima(fit_arima, "arima_ignore_break"),
+  ljung_box_arima(fit_arima, "arima_handle_break")
+) %>%
+  select(.model, lb_stat, lb_pvalue, dof, passes_ljung_box) %>%
+  arrange(lb_pvalue) %>%
+  kable(
+    digits = 4,
+    align = "c",
+    caption = "Ljung-Box residualtest: ARIMA med og uden to breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 7.5 Residualplots
+# ------------------------------------------------------------
+
+fit_arima %>%
+  select(arima_ignore_break) %>%
+  gg_tsresiduals() +
+  labs(title = "Residualdiagnostik: ARIMA ignorerer breaks")
+
+fit_arima %>%
+  select(arima_handle_break) %>%
+  gg_tsresiduals() +
+  labs(title = "Residualdiagnostik: ARIMA med to post-break dummies")
 
 
 
+# ============================================================
+# 8. ARIMA på første differencer:
+# ignorerer vs. håndterer to structural breaks
+# ============================================================
+
+train_diff <- train_models %>%
+  mutate(
+    diff_dk_inflation = difference(dk_inflation)
+  ) %>%
+  filter(!is.na(diff_dk_inflation))
+
+test_diff <- test_models %>%
+  mutate(
+    diff_dk_inflation = difference(dk_inflation)
+  ) %>%
+  filter(!is.na(diff_dk_inflation))
 
 
+fit_arima_diff <- train_diff %>%
+  model(
+    arima_diff_ignore_break = ARIMA(
+      diff_dk_inflation,
+      stepwise = FALSE,
+      approximation = FALSE
+    ),
+    
+    arima_diff_handle_break = ARIMA(
+      diff_dk_inflation ~ post_break_1 + post_break_2,
+      stepwise = FALSE,
+      approximation = FALSE
+    )
+  )
 
 
+# ------------------------------------------------------------
+# 8.1 Se modeller
+# ------------------------------------------------------------
 
+fit_arima_diff
+
+fit_arima_diff %>%
+  select(arima_diff_ignore_break) %>%
+  report()
+
+fit_arima_diff %>%
+  select(arima_diff_handle_break) %>%
+  report()
+
+
+# ------------------------------------------------------------
+# 8.2 Information criteria
+# ------------------------------------------------------------
+
+fit_arima_diff %>%
+  glance() %>%
+  select(.model, AIC, AICc, BIC, sigma2) %>%
+  arrange(AICc) %>%
+  kable(
+    digits = 3,
+    align = "c",
+    caption = "ARIMA på ∆inflation: med og uden to breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 8.3 Koefficienter
+# ------------------------------------------------------------
+
+fit_arima_diff %>%
+  tidy() %>%
+  kable(
+    digits = 4,
+    align = "c",
+    caption = "Koefficienter: ARIMA på ∆inflation med og uden to breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 8.4 Ljung-Box residualtest
+# ------------------------------------------------------------
+
+bind_rows(
+  ljung_box_arima(fit_arima_diff, "arima_diff_ignore_break"),
+  ljung_box_arima(fit_arima_diff, "arima_diff_handle_break")
+) %>%
+  select(.model, lb_stat, lb_pvalue, dof, passes_ljung_box) %>%
+  arrange(lb_pvalue) %>%
+  kable(
+    digits = 4,
+    align = "c",
+    caption = "Ljung-Box: ARIMA på ∆inflation med og uden to breaks"
+  )
+
+
+# ------------------------------------------------------------
+# 8.5 Residualplots
+# ------------------------------------------------------------
+
+fit_arima_diff %>%
+  select(arima_diff_ignore_break) %>%
+  gg_tsresiduals() +
+  labs(title = "Residualdiagnostik: ARIMA på ∆inflation uden breaks")
+
+fit_arima_diff %>%
+  select(arima_diff_handle_break) %>%
+  gg_tsresiduals() +
+  labs(title = "Residualdiagnostik: ARIMA på ∆inflation med to post-break dummies")
